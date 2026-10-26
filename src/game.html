@@ -1,0 +1,2245 @@
+<div id="milk-frog-game" class="frog-game">
+  <style>
+    #milk-frog-game {
+      --frog-lab: light-dark(#f4edcf, #242018);
+      --frog-wall: light-dark(#dce9b6, #303d2b);
+      --frog-paper: light-dark(#fffaf0, #39332b);
+      --frog-ink: light-dark(#2e3225, #f7f1df);
+      --frog-muted: light-dark(#6d705e, #c7c2b2);
+      --frog-line: light-dark(rgba(52, 57, 37, .17), rgba(255, 249, 221, .16));
+      --frog-yellow: light-dark(#f7c943, #e8be45);
+      --frog-green: light-dark(#58874f, #91c381);
+      --frog-red: light-dark(#c34f43, #f28b83);
+      --frog-shadow: light-dark(rgba(62, 54, 28, .2), rgba(0, 0, 0, .38));
+      --frog-sheet: url("../assets/naifrog-spritesheet.webp");
+      color: var(--foreground);
+      color-scheme: light dark;
+      width: 100%;
+    }
+
+    #milk-frog-game * {
+      box-sizing: border-box;
+    }
+
+    #milk-frog-game button {
+      font: inherit;
+    }
+
+    .frog-shell {
+      display: grid;
+      gap: 14px;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: clip;
+    }
+
+    .frog-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .frog-heading {
+      min-width: 0;
+    }
+
+    .frog-kicker {
+      margin: 0 0 4px;
+      color: var(--muted-foreground);
+      letter-spacing: .09em;
+    }
+
+    .frog-title {
+      margin: 0;
+      font-weight: 500;
+      letter-spacing: -.045em;
+    }
+
+    .frog-tagline {
+      margin: 4px 0 0;
+      color: var(--muted-foreground);
+    }
+
+    .frog-dashboard {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .frog-metric {
+      display: grid;
+      gap: 1px;
+      min-width: 76px;
+    }
+
+    .frog-metric span {
+      color: var(--muted-foreground);
+    }
+
+    .frog-score {
+      margin: 0;
+      font-weight: 500;
+      letter-spacing: -.035em;
+    }
+
+    .frog-multiplier {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--frog-ink);
+      background: color-mix(in srgb, var(--frog-yellow) 24%, transparent);
+      transition: transform .18s ease, background-color .18s ease;
+    }
+
+    .frog-multiplier[data-hot="true"] {
+      transform: rotate(-2deg) scale(1.05);
+      background: color-mix(in srgb, var(--frog-yellow) 42%, transparent);
+    }
+
+    .frog-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(220px, .55fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .frog-stage {
+      position: relative;
+      min-height: 390px;
+      overflow: hidden;
+      border-radius: 24px;
+      color: var(--frog-ink);
+      background:
+        linear-gradient(90deg, transparent 0 92%, color-mix(in srgb, var(--frog-yellow) 10%, transparent) 92%),
+        linear-gradient(0deg, transparent 0 92%, color-mix(in srgb, var(--frog-yellow) 8%, transparent) 92%),
+        linear-gradient(165deg, var(--frog-wall) 0 72%, var(--frog-lab) 72% 100%);
+      background-size: 34px 34px, 34px 34px, auto;
+      isolation: isolate;
+    }
+
+    .frog-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 9px;
+      background: repeating-linear-gradient(135deg, var(--frog-yellow) 0 12px, var(--frog-ink) 12px 24px);
+      z-index: 14;
+    }
+
+    .frog-stage::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 17px;
+      width: min(64%, 300px);
+      height: 39px;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      background: color-mix(in srgb, var(--frog-ink) 17%, transparent);
+      filter: blur(4px);
+      z-index: 2;
+    }
+
+    .frog-stage.is-frenzy {
+      animation: frog-room-twitch .32s steps(2, end) infinite;
+      background:
+        repeating-linear-gradient(90deg, color-mix(in srgb, var(--frog-red) 10%, transparent) 0 17px, transparent 17px 34px),
+        linear-gradient(165deg, color-mix(in srgb, var(--frog-wall) 78%, var(--frog-red)) 0 72%, var(--frog-lab) 72% 100%);
+    }
+
+    .frog-watermark {
+      position: absolute;
+      left: 50%;
+      top: 93px;
+      transform: translateX(-50%) rotate(-4deg);
+      color: color-mix(in srgb, var(--frog-ink) 8%, transparent);
+      font-weight: 500;
+      letter-spacing: .1em;
+      white-space: nowrap;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .frog-sign {
+      position: absolute;
+      right: 20px;
+      top: 33px;
+      width: 112px;
+      padding: 9px;
+      border: 3px solid var(--frog-ink);
+      border-radius: 5px;
+      color: var(--frog-ink);
+      background: var(--frog-paper);
+      text-align: center;
+      transform: rotate(5deg);
+      box-shadow: 5px 5px 0 color-mix(in srgb, var(--frog-ink) 16%, transparent);
+      z-index: 4;
+    }
+
+    .frog-sign strong {
+      display: block;
+      font-weight: 500;
+    }
+
+    .frog-speech {
+      position: absolute;
+      left: 18px;
+      top: 28px;
+      max-width: 58%;
+      padding: 10px 13px;
+      border: 1px solid var(--frog-line);
+      border-radius: 14px 14px 14px 4px;
+      color: var(--frog-ink);
+      background: color-mix(in srgb, var(--frog-paper) 94%, transparent);
+      box-shadow: 0 7px 18px var(--frog-shadow);
+      z-index: 12;
+    }
+
+    .frog-speech::after {
+      content: "";
+      position: absolute;
+      left: 25px;
+      bottom: -8px;
+      width: 14px;
+      height: 14px;
+      border-right: 1px solid var(--frog-line);
+      border-bottom: 1px solid var(--frog-line);
+      background: inherit;
+      transform: rotate(45deg);
+    }
+
+    .frog-label {
+      position: absolute;
+      left: 17px;
+      bottom: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: var(--frog-ink);
+      background: color-mix(in srgb, var(--frog-paper) 80%, transparent);
+      z-index: 6;
+    }
+
+    .frog-label-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--frog-green);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--frog-green) 18%, transparent);
+    }
+
+    .frog-poke {
+      position: absolute;
+      left: 50%;
+      bottom: 29px;
+      z-index: 7;
+      width: 215px;
+      height: 233px;
+      padding: 0;
+      border: 0;
+      border-radius: 24px;
+      background: transparent;
+      transform: translateX(-50%);
+      touch-action: manipulation;
+    }
+
+    .frog-poke::after {
+      content: "戳我";
+      position: absolute;
+      right: -2px;
+      top: 36px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: var(--frog-ink);
+      background: var(--frog-yellow);
+      transform: rotate(8deg);
+      box-shadow: 0 4px 10px var(--frog-shadow);
+      animation: frog-bob 1.25s ease-in-out infinite;
+    }
+
+    .frog-poke:active .frog-sprite {
+      transform: scale(1.06, .91) rotate(-2deg);
+    }
+
+    .frog-sprite {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-image: var(--frog-sheet);
+      background-repeat: no-repeat;
+      background-position: 0% 0%;
+      background-size: 800% 900%;
+      filter: drop-shadow(0 14px 9px color-mix(in srgb, var(--frog-shadow) 72%, transparent));
+      transform-origin: 50% 92%;
+      transition: transform .12s ease;
+      pointer-events: none;
+    }
+
+    .frog-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .frog-poster {
+      width: 84%;
+      height: 84%;
+      object-fit: contain;
+      opacity: 1;
+      transition: opacity .2s ease;
+    }
+
+    .frog-game.frog-sprite-ready .frog-poster {
+      opacity: 0;
+    }
+
+    .frog-ghost {
+      position: absolute;
+      width: 122px;
+      height: 132px;
+      left: 50%;
+      bottom: 73px;
+      transform: translateX(-50%);
+      opacity: 0;
+      background-image: var(--frog-sheet);
+      background-size: 800% 900%;
+      background-position: 0% 0%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .frog-stage.is-frenzy .frog-ghost {
+      opacity: .35;
+      animation: frog-ghost-run 1.15s ease-in-out infinite;
+    }
+
+    .frog-stage.is-frenzy .frog-ghost.left {
+      margin-left: -117px;
+      animation-delay: -.4s;
+    }
+
+    .frog-stage.is-frenzy .frog-ghost.right {
+      margin-left: 117px;
+      animation-delay: -.7s;
+    }
+
+    .frog-frenzy-banner {
+      position: absolute;
+      left: 50%;
+      top: 86px;
+      z-index: 17;
+      padding: 7px 14px;
+      border: 2px solid var(--frog-ink);
+      border-radius: 4px;
+      color: var(--frog-ink);
+      background: var(--frog-yellow);
+      transform: translateX(-50%) rotate(-3deg);
+      box-shadow: 4px 4px 0 var(--frog-ink);
+      white-space: nowrap;
+    }
+
+    .frog-frenzy-banner[hidden],
+    .frog-event[hidden],
+    .frog-photo-viewer[hidden],
+    .frog-result[hidden] {
+      display: none;
+    }
+
+    .frog-flash {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background: var(--frog-paper);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .frog-flash.is-on {
+      animation: frog-camera-flash .34s ease-out;
+    }
+
+    .frog-event {
+      position: absolute;
+      inset: 15px;
+      z-index: 30;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 22px;
+      border: 1px solid var(--frog-line);
+      border-radius: 19px;
+      color: var(--frog-ink);
+      background:
+        linear-gradient(110deg, color-mix(in srgb, var(--frog-yellow) 18%, var(--frog-paper)) 0 22%, var(--frog-paper) 22% 100%);
+      box-shadow: 0 20px 50px var(--frog-shadow);
+    }
+
+    .frog-event-title {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .frog-event-copy {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--frog-muted);
+    }
+
+    .frog-event-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .frog-timer-track {
+      height: 5px !important;
+      margin-top: 2px !important;
+    }
+
+    .frog-timer-track .progress-bar {
+      transition: width .1s linear;
+    }
+
+    .frog-result {
+      position: absolute;
+      inset: 14px;
+      z-index: 35;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 13px;
+      padding: 24px;
+      overflow: hidden;
+      border-radius: 20px;
+      color: var(--frog-ink);
+      background:
+        radial-gradient(circle at 15% 12%, color-mix(in srgb, var(--frog-yellow) 28%, transparent) 0 20%, transparent 21%),
+        radial-gradient(circle at 85% 84%, color-mix(in srgb, var(--frog-green) 22%, transparent) 0 24%, transparent 25%),
+        var(--frog-paper);
+      box-shadow: 0 20px 50px var(--frog-shadow);
+      text-align: center;
+    }
+
+    .frog-result h2 {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .frog-result p {
+      margin: 0;
+      max-width: 44ch;
+      color: var(--frog-muted);
+    }
+
+    .frog-result-score {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      color: var(--frog-ink);
+    }
+
+    .frog-result-score b {
+      font-weight: 500;
+    }
+
+    .frog-result-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .frog-result-chips span {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--frog-ink) 8%, transparent);
+    }
+
+    .frog-pop {
+      position: absolute;
+      left: 50%;
+      bottom: 52%;
+      z-index: 25;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: frog-pop-float 1s ease-out forwards;
+    }
+
+    .frog-debris {
+      position: absolute;
+      left: 50%;
+      bottom: 38%;
+      z-index: 22;
+      pointer-events: none;
+      animation: frog-debris 1s cubic-bezier(.18,.75,.3,1) forwards;
+    }
+
+    .frog-side {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .frog-sanity-label {
+      margin: 0;
+      color: var(--muted-foreground);
+    }
+
+    .frog-sanity-value {
+      margin: 3px 0 8px;
+      font-weight: 500;
+      letter-spacing: -.03em;
+    }
+
+    .frog-sanity-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .frog-sanity-card::after {
+      content: "🧪";
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      opacity: .6;
+      transform: rotate(12deg);
+    }
+
+    .frog-sanity-copy {
+      margin: 9px 0 0;
+      color: var(--frog-muted);
+    }
+
+    .frog-log-box {
+      display: grid;
+      align-content: start;
+      gap: 9px;
+      padding: 14px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--frog-ink) 6%, transparent);
+      min-height: 139px;
+    }
+
+    .frog-log-box h2 {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .frog-log {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .frog-log li {
+      padding-bottom: 7px;
+      border-bottom: 1px solid var(--frog-line);
+      color: var(--frog-muted);
+    }
+
+    .frog-log li:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .frog-start-wrap {
+      display: grid;
+      gap: 6px;
+    }
+
+    .frog-start-note {
+      margin: 0;
+      color: var(--muted-foreground);
+      text-align: center;
+    }
+
+    .frog-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .frog-action {
+      min-height: 52px;
+      justify-content: flex-start;
+      white-space: nowrap;
+    }
+
+    .frog-action .frog-action-text {
+      display: grid;
+      gap: 1px;
+      text-align: left;
+    }
+
+    .frog-action .frog-action-text small {
+      color: var(--muted-foreground);
+    }
+
+    .frog-gallery-panel {
+      display: grid;
+      gap: 8px;
+    }
+
+    .frog-gallery-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .frog-gallery-head h2 {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .frog-gallery-count {
+      color: var(--muted-foreground);
+    }
+
+    .frog-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .frog-photo-thumb {
+      min-width: 0;
+      padding: 4px 4px 6px;
+      border: 1px solid var(--frog-line);
+      border-radius: 4px;
+      color: var(--frog-ink);
+      background: var(--frog-paper);
+      box-shadow: 0 5px 13px var(--frog-shadow);
+      transform: rotate(-2deg);
+      transition: transform .18s ease, opacity .18s ease;
+    }
+
+    .frog-photo-thumb:nth-child(even) {
+      transform: rotate(2deg);
+    }
+
+    .frog-photo-thumb:not(:disabled):hover {
+      transform: translateY(-4px) rotate(0);
+    }
+
+    .frog-photo-thumb:disabled {
+      opacity: .44;
+      box-shadow: none;
+    }
+
+    .frog-photo-thumb-art,
+    .frog-photo-image {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      aspect-ratio: 192 / 208;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--frog-yellow) 25%, var(--frog-paper)), var(--frog-paper));
+    }
+
+    .frog-photo-thumb-art {
+      min-height: 56px;
+    }
+
+    .frog-photo-sprite {
+      position: absolute;
+      inset: 0;
+      background-image: var(--frog-sheet);
+      background-repeat: no-repeat;
+      background-size: 800% 900%;
+      transform-origin: 50% 80%;
+      transition: transform .2s ease, filter .2s ease;
+    }
+
+    .frog-photo-label {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--frog-muted);
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .frog-photo-lock {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--frog-ink);
+      background: color-mix(in srgb, var(--frog-paper) 68%, transparent);
+    }
+
+    .frog-photo-thumb.is-unlocked .frog-photo-lock {
+      display: none;
+    }
+
+    .frog-photo-moment {
+      position: absolute;
+      left: 50%;
+      top: 104px;
+      z-index: 26;
+      width: 174px;
+      padding: 7px 7px 9px;
+      border: 1px solid var(--frog-line);
+      border-radius: 5px;
+      color: var(--frog-ink);
+      background: var(--frog-paper);
+      box-shadow: 0 16px 30px var(--frog-shadow);
+      transform: translateX(-50%) rotate(3deg);
+      animation: frog-photo-drop .26s cubic-bezier(.18,.8,.25,1);
+      pointer-events: none;
+    }
+
+    .frog-photo-moment .frog-photo-image {
+      height: 160px;
+    }
+
+    .frog-photo-caption {
+      display: block;
+      margin-top: 6px;
+      color: var(--frog-muted);
+      text-align: center;
+    }
+
+    .frog-photo-art-label {
+      display: block;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .frog-photo-prop {
+      position: absolute;
+      right: 4px;
+      top: 5px;
+      z-index: 3;
+      transform: rotate(12deg);
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .2));
+    }
+
+    .frog-photo-serial {
+      position: absolute;
+      left: 5px;
+      bottom: 4px;
+      z-index: 3;
+      padding: 1px 4px;
+      border-radius: 2px;
+      color: var(--frog-paper);
+      background: color-mix(in srgb, var(--frog-ink) 80%, transparent);
+    }
+
+    .frog-photo-viewer {
+      position: absolute;
+      inset: 14px;
+      z-index: 37;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      color: var(--frog-ink);
+      background: color-mix(in srgb, var(--frog-paper) 94%, transparent);
+      border-radius: 20px;
+      box-shadow: 0 20px 46px var(--frog-shadow);
+    }
+
+    .frog-photo-viewer-card {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      width: min(280px, 90%);
+      padding: 8px 8px 12px;
+      border: 1px solid var(--frog-line);
+      border-radius: 5px;
+      background: var(--frog-paper);
+      transform: rotate(-1.5deg);
+      box-shadow: 0 10px 25px var(--frog-shadow);
+    }
+
+    .frog-photo-viewer-card .frog-photo-image {
+      width: 100%;
+      height: 220px;
+    }
+
+    .frog-photo-viewer-card h2,
+    .frog-photo-viewer-card p {
+      margin: 0;
+      text-align: center;
+    }
+
+    .frog-photo-viewer-card h2 {
+      font-weight: 500;
+    }
+
+    .frog-photo-viewer-card p {
+      color: var(--frog-muted);
+    }
+
+    .photofx-squash .frog-photo-sprite {
+      transform: scale(1.45, .72) rotate(-4deg);
+      filter: saturate(1.45) contrast(1.17);
+    }
+
+    .photofx-pixel .frog-photo-sprite {
+      transform: scale(1.5);
+      filter: contrast(1.8) saturate(1.4);
+      image-rendering: pixelated;
+    }
+
+    .photofx-noir .frog-photo-sprite {
+      transform: scale(1.22) rotate(5deg);
+      filter: grayscale(1) contrast(1.65);
+    }
+
+    .photofx-acid .frog-photo-sprite {
+      transform: scale(1.28) rotate(-7deg);
+      filter: hue-rotate(145deg) saturate(2.1) contrast(1.18);
+    }
+
+    .photofx-door .frog-photo-sprite {
+      transform: perspective(120px) rotateY(29deg) scale(.92, 1.26);
+      filter: saturate(1.2) contrast(1.25);
+    }
+
+    .photofx-tv .frog-photo-sprite {
+      transform: scale(1.75) translateY(9%);
+      filter: sepia(.45) saturate(1.7) contrast(1.25);
+    }
+
+    .photofx-wanted .frog-photo-sprite {
+      transform: scale(1.36) rotate(2deg);
+      filter: contrast(1.8) saturate(1.7);
+    }
+
+    .photofx-glitch .frog-photo-sprite {
+      transform: scale(1.32) skewX(-7deg);
+      filter: contrast(1.5) saturate(1.8);
+      animation: frog-photo-glitch .22s steps(2, end) infinite;
+    }
+
+    @keyframes frog-photo-drop {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-24px) rotate(-8deg) scale(.82); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0) rotate(3deg) scale(1); }
+    }
+
+    @keyframes frog-photo-glitch {
+      0%, 100% { margin-left: -3px; filter: contrast(1.5) saturate(1.8); }
+      50% { margin-left: 3px; filter: contrast(1.8) saturate(2.2) hue-rotate(18deg); }
+    }
+
+    .frog-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted-foreground);
+    }
+
+    .frog-bottom p {
+      margin: 0;
+    }
+
+    .frog-bottom-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .frog-credit {
+      opacity: .86;
+    }
+
+    .frog-credit a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    @keyframes frog-bob {
+      0%, 100% { transform: translateY(0) rotate(8deg); }
+      50% { transform: translateY(-6px) rotate(2deg); }
+    }
+
+    @keyframes frog-room-twitch {
+      0%, 100% { filter: saturate(1); }
+      50% { filter: saturate(1.55) contrast(1.08); }
+    }
+
+    @keyframes frog-ghost-run {
+      0%, 100% { transform: translateX(-50%) translateY(0) rotate(-3deg) scale(.95); }
+      50% { transform: translateX(-50%) translateY(-19px) rotate(4deg) scale(1.04); }
+    }
+
+    @keyframes frog-pop-float {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(.78); }
+      20% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+      100% { opacity: 0; transform: translate(-50%, -78px) scale(.92); }
+    }
+
+    @keyframes frog-debris {
+      0% { opacity: 0; transform: translate(-50%, 6px) scale(.55) rotate(0); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(calc(-50% + var(--drift, 0px)), -105px) scale(1.15) rotate(var(--spin, 30deg)); }
+    }
+
+    @keyframes frog-camera-flash {
+      0% { opacity: .94; }
+      100% { opacity: 0; }
+    }
+
+    @media (max-width: 650px) {
+      .frog-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .frog-stage {
+        min-height: 350px;
+      }
+
+      .frog-side {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: auto auto;
+      }
+
+      .frog-sanity-card {
+        grid-column: 1 / -1;
+      }
+
+      .frog-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .frog-gallery-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .frog-sign {
+        right: 11px;
+        top: 28px;
+        width: 92px;
+      }
+
+      .frog-speech {
+        max-width: 55%;
+      }
+
+      .frog-poke {
+        width: 184px;
+        height: 199px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .frog-dashboard {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .frog-speech {
+        max-width: 62%;
+      }
+
+      .frog-sign {
+        width: 78px;
+      }
+
+      .frog-side {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .frog-sanity-card {
+        grid-column: auto;
+      }
+
+      .frog-action {
+        white-space: normal;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #milk-frog-game *,
+      #milk-frog-game *::before,
+      #milk-frog-game *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+
+  <section class="frog-shell" aria-labelledby="frog-title">
+    <header class="frog-header">
+      <div class="frog-heading">
+        <p class="frog-kicker text-small">🧪 NAIWA LAB · 奶龙民间变异体观察 #404</p>
+        <h1 class="frog-title" id="frog-title">奶蛙，给我笑！</h1>
+        <p class="frog-tagline text-small">这不是育儿模拟器，是一场有预谋的表情管理事故。</p>
+      </div>
+      <div class="frog-dashboard">
+        <div class="frog-metric">
+          <span class="text-small">抽象值</span>
+          <h2 class="frog-score tabular-nums" id="frog-score">00000</h2>
+        </div>
+        <span class="frog-multiplier text-small" id="frog-multiplier" data-hot="false">
+          <span aria-hidden="true">🔥</span>
+          <span>缺德倍率 <b id="frog-mult">×1.0</b></span>
+        </span>
+        <div class="frog-metric">
+          <span class="text-small">剩余</span>
+          <strong class="tabular-nums" id="frog-time">40.0s</strong>
+        </div>
+      </div>
+    </header>
+
+    <div class="frog-main">
+      <section class="frog-stage" id="frog-stage" aria-label="奶蛙整活实验舞台">
+        <div class="frog-watermark" aria-hidden="true">NAIWA · 404</div>
+        <div class="frog-sign text-small" aria-label="实验室须知：禁止讲理，允许拍打">
+          <strong>实验须知</strong>
+          禁止讲理<br>
+          允许拍打
+        </div>
+        <div class="frog-speech" id="frog-speech" aria-live="polite">奶蛙正在装无辜。先点“开始整活”。</div>
+        <div class="frog-label text-small">
+          <span class="frog-label-dot" aria-hidden="true"></span>
+          <span id="frog-state-label">待机 · 假装乖巧</span>
+        </div>
+
+        <div class="frog-ghost left" aria-hidden="true"></div>
+        <div class="frog-ghost right" aria-hidden="true"></div>
+
+        <button class="frog-poke cursor-interaction" id="frog-poke" type="button" aria-label="戳一下奶蛙肚皮">
+          <span class="frog-fallback" aria-hidden="true">
+            <img class="frog-poster" src="data:image/webp;base64,UklGRgAXAABXRUJQVlA4WAoAAAAQAAAAvwAAzwAAQUxQSNoJAAAB8IZtu2k78v/dzxhjJxU77Q66q227bFfctt2dpG3btl22bdu2q5LsXWs8z3O/SLLWXHOPMT98ERETgP9/UBKAyS9+94EH3k933nbQgW981kQAqStFYGSXX16f2ffoFd/bCpDQhYJgwlsuJElT9Y1c1Ujy1A8DUTpPAt58AanZnX27ZSNP2R6QjpPwpMNJNTZqmfrt6QidJmHJTewZG1fn+fMRO0zE28jMoWZeOA+hsyS8jdk45MwL5kE6SsJWVOfQMy+YnKSTBDzpBjO2sMdvI3QRSRNOY2YbPeurJHaQhA+yx3Yqz0aQziEy6xa3ljDzg4idI8kbmNlW8ztminSNiANcW8PM1UgdI2DLde7tUT9DQsdI+AwzW+xjT0LsFgEnubYpcw1GusbxbJXyjBC6xuntoo09CaFTRPyhZZkfR+oUCW9nbtmhoWu8t2XOu6ZDusUHW0bNr0DsEhErTNuVuRapSwQ8hvRWKQ+T2CUkTL+C1irn3TMgHQIRR1BbRbNXIHaJJGuY25W5FqlT4K1tUx6G2CUCnjHm3irjXXNEOoRgXma7qNwXqUMgbHEGrV3Zv9EtIvantst4xUTpFoe0jc6XSOx02b+B1Cn2a53zrlkinUFk+uW0ltG4DLE7YJ7SW+fnxdAZAl7as9ZRuQSxKyR8hJmtNz9PQleI8Thq+6j8JFI3CPL4Hn0cuN39KEgniPgCM8ejcn+kLhDC3Pvp44KZr0PqAAl/oXJ8uo4+E7F6CUuoHK/G8+aFUDnB7Nvcxw2VZyNK1SRN+A+N47jHbyNUbQK+yR7Hdea3MFKxhLdaj+O8x7dhQrUS3kLz8eZ5/Q6IlYp4cs+c4945tgNilQIedYMZC2gcXYhQIUnpP8wsovKM2VHqk7CaPRYy848YqU7AUx9WLwV7/DxiZSTGU6gspiu3QqxLwmpmFtT8rtkSahLw1GxeEmb+GakmMZxKZVkz90WqR8TOVBbW/PY5IrWQMOMyt9Iw8y+ItYhYQ2VxXe3pCHUQzLzVvDxUHjMSpQoJ72NmiZVLkKoQcIprmeyCkViDiF2oLLNyKWL5JKTTyuUXpFC+iJdQWWrjUsQK/Kpkfn6U0gU8YdRYbuVyxMIlWc1cMj8NoWwi6TpaweijiyUULcrOqiy58pNIRUvYj7lo7nfOghQs4IkPmheNyhWSCpawhpllz/4vxIKFcDq1cO53z4IUK8orzVj6zBVIxUr4KXPxlP8JxQqyaIN78Zy3b4FSJ/yAmeW33otKJWHKjbQKZH6wVAnvoLIK/45lEplyvVsNnDdNLFOU7Wmsgt//1DIFHOxaBRqXFklk0YPOWnyoSAmfYq6E8ogSiUy+zK0aB5UoYQcaq/HvMv3Scy2cV5UIuIpWC5IFCnjGqLOeXqCETzB3uoCDqBVheQSTb6NVw3hGeSJeqspqKvcrT8IbWJWDyjOCnzPX5PDyhJFTaTX5ZXkwcie9Hsa9CzT3Tq/KqgLtSmVF8s4F2q4mzlunFOgbzDW5a1qBflcT5X6xPPKHmmT+BuWdcjO9Hsq3FmjGHVXxrQq0lxmr6bx9WoFWsio3TyjQX6n1yPyrpPIcUhX/EkbK8wC9HsrtEcvDirrd/0SE8nhFjNcBUh5W5bLU7TK/j4TyelV+XCRWVLm6SBfTqmF8IWKBfuJakZcXaQmtFsZrJ6LE865z34xa6a5Emb/N3qaMhc/8OVKJwuzbXT2bGY88kVYy47ZlinipcZOr8DJqydyfhlAiBOx6xU1/PPeWL2Fki3PdyqV+mASUOSBOBCYiJOxDLRhfh1QoRCACARLCua6lMrtmsqDYIhABELEPS2U9vgGxXH0GOZ9aIu+Rn0ZEBSN26JVHTcl71iKiihF/o5aG5N0ffiwi6hjiY+9WL4rr2Wee+nwgopYRr6OVJPNbAJAE9UzYj1oOt3WPlBgCahrkyaPuxVB+ABG1DTiRWgrjZSFIfeSEcihfgYD6oBzKbyOhwymPmRKly2WuwAi6nHK/CSPS5aj8NFKn86yvR+pydOezkSp0fDlodvUCxPqcVBAar1mAUJ3Dh5LdvVVUXrMwhLokvId5CBvnPr0FzLxERCrz/iG47X/LfevYr7eAmb9EqErEi9W9ocy/YsbMx67Y9KqVX7mH3gI3fRJCTQLmj7Ih17uflND/0x8yb8FY3haxJojpZGozmR9HEglp8xPxLuoQnJpzzuTVSaQu+GND6udMSYL+E453bW6zY396SgioasIbmZvhbkgYMGIbWkPuY3s+acXa1WvfuwjVDdhyzL0B5VkhYuAox1Mb4v0TsOkYaoMQTqE2kLkWqQFsQ2vqgXkhbRxQ34TvMDdgvacgDIYoJ1Abun82BJWOeInaYMaTJaAJbNvY+jn1QpSTqQNl/kJSE4hyArUJ5XEjEdVOeLvlgZRvRGwGW/UayfwrUr0EU++lD2QvbwgJP2Fu5B81Q5QfMg9gvH0KpJkgC9aZN3Fg3fACtQGUZwVpCAk/YW5ibdVE0mW0/jJ/hISGgyxYZ97AHlVDwreY+1O+ozlE/JS5gaV1C1i83r0vf/jpCI0FWbDOfLAldUPACdR+jFdimBE/ZR5s38oleccg1w0lyOPXmQ+0vHIRr6D1o/wt4hAQ8VPm/twfWIBQNYkzb6b1kfllpGEEWbjevD/eNQlSLwlJsOWD5n19bziI+Cl1gLunV0tiApB2O4/GPpUrEIcSZOEG8wGm1UliBCAv+uJ5pLPfzI9LGgoifkKtnsQIYOoePzufpBoH+B3icIIs2uBetxABTNv9N7eQZDYO6LxtMmQoiPglc3/TKyMRmL77r24iqdnYoHFvxCHJtm7ez12T6yLAk35+I0nLzmYzf4Q0nICFzn78vscgVEQw+SvrSMvGxjO/PzR5ZF/M3FNSPQTzzyazc5jZfzisEXyLxr7WoCIhHceec7gP89tDGsGXaOzXeNtMkVoEPJ3KIbprzrxtjsgwErbX7H0xcw1SPZ7DnjXirpozNz57KwQMMWH7UXP2rzwvhlqIzLiJNHP3zbmr5sxN+gOHfWZXQcAQR7DdKI2DKndDrAQEz/3T+dxYN87ZuEkbO/Wwj7/hOXMBIGCII9h+lMaBM9+IVAsIkD5yUW/9ndys5pOP/cg7nvpobDKkKBhiwptG3Ti48oeI1UCIQFz42LmfOOWkU458/weWLFyITUpMKQiGG7H9w25s5JSaAIgYMMSUgqCFEc/Z4MYms38XqSqQECSGEEJKMQS0NqaD2WOjypcg1mWcCuaPuTeSee4WAR04YqdeJkn3Acz1+YhdSPDIHrOZkbaRq6maZ+Z3I6ITByy/lyTvuov9b9gFCR1ZsGjZ0mXLHjH373T3Oz65/BsHnXj1316ChP/jD1ZQOCAADQAAMEcAnQEqwADQAD49HItEIiGhFTnlCCADxKbr3AAGabD64/PD7z+S/5QfMrYf7/+MOUNOL7AfDn7j+7/lb8F/Vt5hX62frv1z/M3+3H7ge7z/sP2q94f9x/yn5AfIB/Lv9L///XA9jX0C/2c9Mz9wfg0/rX/K/c32pv/r7AH//9QDga/w3/UaDdb/0azJiWCDyffXzaesR6I37AGyO/3iCpGJAAGZqA/uof0XQS2AZePTTlxYbM+/RL//vusHAGhDu28wo5dZfuB+0gXBCLi0pFgkoySnOsbyxE3ZzTkXAZC0hvm4jVbABOwRyiOGcQD0pMrWHJu4aum+7gJhallWPy9o+mVxMem5eH6FRxMBOZJ20pRABuLol6GfPcKxkNwgaAqJ6yTBHZb8wkAF/alJpoHpeXR4LvuNywpbnU26G7G4UNfh0lBPRVrh2RWZYFXnwI1V3KIANE7IucFtE531TUMmKKSlSErfh9mL87CLCqq/hAq92IfiBZAVDa8oH6H+DCvu0HZxA3ubOPxk0K7cLhiftDq3EK5XXNwY2ANjEXfhAZwCz1pJsRIuetMI6QXko/LWFThsa9weKil+2Dy2DSUfllIYrfy9uN1+jyyYVu4SqiUeHXheX2HQlHsDgCMFfGtk0PkrTKQNS3xfo4fWL7aRgwBbFK5aULJ9r0DCT9gOM2tVwLns0hqgd4KMt1JRJLfDLTQwtnSkDPNKZciDmj34I5HtvHR67RlRj1Sr1dWRzroRpjYGJ5Ldvxs/ZWCrSAAA/uxB25m2T+w5FKvTYNdu8zyX59JpExJVkRmOQcs6J8LLJGoBegMdNLdtwrao/kWxXLtsW/Ka+xRF57VYUXEA0mfxvdm2d5bQzafQ/t+OgNeMsMKVByr6Wqv/yqIskJPkzEip9Ab+fFCrwcB7fn/GwdfiH0FeEoD5RVxu03IwWSowHlojhTAY9vvrLPEc/JGGi/ltXjT7636MaIALTDj3MX+earv5kyQVyZi4mw/mnqhFbG5ZPGHuLfZ+bf/m3yfmcx/kxBNpi2SaaclYguMO6eZxhHHl9nOPs93iYwMEqaJxNkeWx+WQyBRJwbU6zLK0vAOxsB6gWwpnQC/sgzsHuG1q9C2Y2fi05ZGoS8ZncY/qNkhCAsnaD+zP9W+/Ci/4xe25wTa1UGDLKl/WaQYu6mVkavoLhipnmWnxFpUFmNYU9vvDzaQlQWQnQ8/2Gc6hupog769E7m3/xSJdR+VIi/fv6f7/Xz37SGLgX2f/7IBazL/FXjmptAFL/7GrCT5PaRVgl4x9RUFepl72dNqwEflI9jN0Izi9fOx41g4PrRpZeNhdGN+aKYHD7a5047mk7WUNDD+0sYZfngK0jiVpI6dL4/Gvkj1o8eEANNJ/34pRQ8iUCrazBw52X1a8oQ7e1tRklvN+olBZk7AnI5aVz3lprovu9hAakJhp6/f40boGrS7BAHHgpGarOAw8QcnLtnCfjVvJkViQp0hQR3tvTb4mxvvnWlNBeuEw7A/fQ0Kd3pkdz7FAzteIHz90XBhhUolTux9zKQCV7j4HroS7GqPyJMUT0H2gDT/ZwNZiwRi3iubny6218KH5mkoZ5RAF3pMcpCL9d77zKlT3bEcvc5X9ABaeX3ChFlxO7JcrTvOdUfZSGNXGYI1Kx9xDCrQmRPLY+W10KaldcbTP2s/7wdGo9CFqiv07ClacriHf/aMmtT3+aK6YvsJ5rMAn0VyUY5F2PKAmwApf7I6ENj+J74LFkT1K22ma2s9OpxyjE1NputwmoGM6B39T+dIBT6ErQhWh1xFaBUqUzMTxo2+VJG5gDObamIC2aB83yZkuhAPwRWMJR5EHw/cHyCDwLRbi66caBzfWaqUzC+/oKRbpzKoYf+HLeDi9o4jNh58HCdFakzivzEKijHyR2k3hQhwJMT1acGofoIfisZMNdINdZKd7mjeqJBh8C8KV4ENf6FEJv70dMtjnqqLbXJq42rv5b89Axoi+RVEvzkEz//8wqA5/Ep2vyFu3+eRd19N4GLBt3ZjtkYsuwJTpXHyPLnkRr//5VKC75EzG2S1RrdR9T1MdkRnT2FeIBijEVWbCKq/oVjROW17gEjcSC9IntC1Lktv1Q1ATqDwWuPPiVdkDr0h7PnwHkQsnGs2R/bS/BtIiTVSAttj/vvJgCevxhCZV5nDLcWVNbHzdDp4Tf4TU1tljstLXuWWhpclaN75DM1ZvquRbdm9Rhd9vojbuXCB9salcnKD5jCzx5EA7HtOObx2o/dh9TtXkw0Q+56WM0WxZ7xoALzwvUrp5GwtfSJqQW+l5xed+EHkFAZBG6fEzmJqTdzfPiab9U0UAqreicmCx284qVynMeDpR6wImWkeQlC0xo21Hs0Sv0bU96h7nzgu8WzX9qNwdexH7HOMgtcMPNRUKpz3kfN01DTdVsu1snWAtp4hh/7CxoUaaF3L+E7PazKeUIEWLprV0Km55UE39NNizfWeKaM9IWCo0JzWBN3QshPj+PCBRpoajv13tswSRKad4pI4hQTGD6w5NJsQQw/qFiTfyKSZsTyK3stNKwOAchgWFLRNkj2xkRH61pkqG9hkLbeIJRfpAVyQzCGoXdP/Mp7QfNr7PuVqCYgr0U+7/HHD45vVY8bMtkoP87xoU7Yp0YItGrSmPB4j8mu5k1U90k+UfvrN7mUMPlWCDmgj5gBs8VmM/y9SiNYJpbqq/8wpuBLz2BRckKZRuIsjFSzahKuog3UOnQQHy4OzqKBAX5tfhVcRVrOv+Qn4VcEOc+ctJR/qLUzQbKO5PWMaocCy6f9OaMmud+vY5xW6FTn1kJSQ00igKn3TUE/GxYGnJsn81muqfHc7v+SAog8N+h+ROPSnPS2C44stJ8bEEEYKS5encenxzCz5ncBCgvHTr81ZFP9E/9nehQQCbA0TuvzvrlUlT6Gy+W3hTYhmOqZWNE6C3nAq37/JTwSY61YZEb0ld0i1dN37EfMixpV9Dbfxi2vjOMvvGmH87RYJSW/JRAWF8qNK9jvlQWRKc1ua9PxVGhgShro9kG7oFqRdrWxXfldqrvqrXg9zfQaKFDOZokfAQY9jJKJQleZd7Te66yuMDwsInMGAXjUBLraGj2cYsvqBvQUjcJGZcPYp+d/MFqpGvn8GH94Cz8BEWMZ7MTNte8Wx3MSctO5GMFAqW7pXtNimIL8upN0rcPTzW2LKAAh84OOWLDqcrQ2gFl9ZNajdKD8eEAhASGqsa0i92ayCpWcEl2Deb6N4Prf5ch233/h6U9/zy8cDdHDdZzsFUsLWcm6amAwUeyEehY3dqCYDzspYyAu4oXyPrR6jZOsmHB3mfFy629/fumlMcWmszAR8M5/0OIa4XCHoGOqHHB2xlFbM/HKnWfjNUAHlT6FIIkeMkKFcdY6oIS4V6qV0dLDE/XBf/kuNoML0PgYCEe7EtjqI1MNN7tR9OiSo5MQNL+8A63JaifPHXyRLKvbJAETb+bP4nCxeKqCdLvkbijrYD+zDkv5iKnloE51v/3R+IxpYsKqgL7Qkrfqnx62atkFS/VMTtd0mN5Nw6pOuT9ynrKnT42/AZAfkEIf9OrmvQpv4a7+fvTCpBpwmbc1C6EzNQrchhTfY6wyOaD6fjJh5IYfWI3N4olL3d89Ge24feizXq38mpS07QayuZDPmA9VMZzMw72/iyxkFNHf/g6yr9Img9+s/n0ZnrfX9Ml9Cdk9/ajIejroXg6InAi9lAAwc3ADGwP+ej8RZTBwcPgILJd00oj6eGs0V3M+UBH3Lyr/INbOXuYMpqzLW5XHIRx6dS/sCu2WJOw87e7sK65OVPWLD+Mdt6PML8lRniTecwDwRuSNujWEIzmVWVhIVojEFlCCxIZWGSiDQxlP9M6NbA2GyJ8KytKznQveNngKBh8nSDD3vKUq182BwirnUHPv+xliPDZC+7j+MMPr+vThBtJGSYNM6VJXSwLzyAiPwBcxvzWLjQEy4yK74Cdb/sagfl2FRacoVwf368o29CXH2u5o1G/PjvwJMTHWboayC8Fj1oLVD0+E/DRiWRaL0KyvlWusSVxgO2uI1dr5I+hCVBoKGdgSj0jLKEaMO/FhzcOGXhvGmcAOGQH7/Z9GdqxTunwu1/zIe1Hue3DDEF3MlDRyclI9xCnbKk91aNOqpQD7SIvgwQRFgBU4T5r25vtFfzwsS7XL7K+jl3A5+D+mMaz3zeTKGMzGh37wjCqECHdDT6lhZXaCA6URwoNw1tusgOC1sehLR6BkRLjg3BN7X6K71h44Sqb86Lk1v7GHgUUwLatjCJyzEX+3CwhItow7wsv0iv0CD6vreEP3z3fGPxurzSamHXYo1Bp4mMec/d+iKZgeTrhgMitDFE0urHv9RqSELVn9dkogx/sgXE2kQwirqu19m1t0+wQOzRgrWZ/vcs3i51ySgAAA==" alt="" decoding="async">
+          </span>
+          <span class="frog-sprite" id="frog-sprite" aria-hidden="true"></span>
+        </button>
+
+        <div class="frog-frenzy-banner text-small" id="frog-frenzy-banner" hidden>⚠️ 理智欠费 · 奶蛙暴走 · 得分 ×2</div>
+
+        <div class="frog-event" id="frog-event" role="dialog" aria-modal="false" aria-labelledby="frog-event-title" hidden>
+          <p class="frog-kicker text-small" id="frog-event-kicker">突发插播</p>
+          <h2 class="frog-event-title" id="frog-event-title">奶龙来电</h2>
+          <p class="frog-event-copy" id="frog-event-copy"></p>
+          <div class="frog-event-actions" id="frog-event-actions"></div>
+          <div class="progress frog-timer-track" id="frog-event-meter" role="progressbar" aria-label="选择剩余时间" aria-valuemin="0" aria-valuemax="5.5" aria-valuenow="5.5">
+            <div class="progress-bar" id="frog-event-bar" style="width:100%"></div>
+          </div>
+        </div>
+
+        <div class="frog-result" id="frog-result" role="dialog" aria-modal="false" aria-labelledby="frog-result-title" hidden>
+          <p class="frog-kicker text-small">缺德实验最终报告</p>
+          <h2 id="frog-result-title">互联网抽象遗产</h2>
+          <p id="frog-result-copy">奶蛙已失去表情管理，但拒绝承认自己疯过。</p>
+          <div class="frog-result-score text-small">
+            <span>抽象值</span>
+            <b class="tabular-nums" id="frog-result-score">0</b>
+          </div>
+          <div class="frog-result-chips text-small" id="frog-result-chips"></div>
+          <button class="btn btn-primary" id="frog-restart" type="button">再审一局</button>
+        </div>
+
+        <div class="frog-photo-viewer" id="frog-photo-viewer" role="dialog" aria-modal="false" aria-labelledby="frog-photo-viewer-title" hidden>
+          <div class="frog-photo-viewer-card">
+            <div class="frog-photo-image" id="frog-photo-viewer-image">
+              <span class="frog-photo-sprite" id="frog-photo-viewer-sprite" aria-hidden="true"></span>
+              <span class="frog-photo-prop" id="frog-photo-viewer-prop" aria-hidden="true"></span>
+              <span class="frog-photo-serial text-small" id="frog-photo-viewer-serial">NO.000</span>
+            </div>
+            <h2 id="frog-photo-viewer-title">黑历史</h2>
+            <p class="text-small" id="frog-photo-viewer-caption"></p>
+            <button class="btn" id="frog-photo-viewer-close" type="button">关掉，太丑了</button>
+          </div>
+        </div>
+
+        <div class="frog-flash" id="frog-flash" aria-hidden="true"></div>
+      </section>
+
+      <aside class="frog-side" aria-label="奶蛙状态与实验记录">
+        <div class="card frog-sanity-card">
+          <p class="frog-sanity-label text-small">奶蛙理智余额</p>
+          <h2 class="frog-sanity-value tabular-nums" id="frog-sanity">100</h2>
+          <div class="progress" id="frog-sanity-meter" role="progressbar" aria-label="奶蛙理智" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="progress-bar" id="frog-sanity-bar" style="width:100%"></div>
+          </div>
+          <p class="frog-sanity-copy text-small" id="frog-sanity-copy">尚未开始怀疑人生。</p>
+        </div>
+
+        <div class="frog-log-box">
+          <h2 class="text-small">实验记录</h2>
+          <ul class="frog-log text-small" id="frog-log">
+            <li>系统提示：此实验没有对照组，因为没人愿意来。</li>
+          </ul>
+        </div>
+
+        <div class="frog-start-wrap">
+          <button class="btn btn-primary btn-block" id="frog-start" type="button">开始整活</button>
+          <p class="frog-start-note text-small" id="frog-start-note">40 秒 · 没有奶蛙受到实质伤害</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="frog-actions" aria-label="作案工具">
+      <button class="btn frog-action" type="button" data-prank="coffee" aria-label="1 号工具，冰美式灌顶，理智减 18" disabled>
+        <span aria-hidden="true">☕</span>
+        <span class="frog-action-text"><span>冰美式灌顶</span><small>理智 −18</small></span>
+      </button>
+      <button class="btn frog-action" type="button" data-prank="sock" aria-label="2 号工具，臭袜熏蛙，理智减 22" disabled>
+        <span aria-hidden="true">🧦</span>
+        <span class="frog-action-text"><span>臭袜熏蛙</span><small>理智 −22</small></span>
+      </button>
+      <button class="btn frog-action" type="button" data-prank="nailong" aria-label="3 号工具，播放奶龙洗脑，理智减 16" disabled>
+        <span aria-hidden="true">📺</span>
+        <span class="frog-action-text"><span>奶龙洗脑</span><small>理智 −16</small></span>
+      </button>
+      <button class="btn frog-action" type="button" data-prank="photo" aria-label="4 号工具，丑照留档，理智减 20" disabled>
+        <span aria-hidden="true">📸</span>
+        <span class="frog-action-text"><span>丑照留档</span><small>解锁图鉴</small></span>
+      </button>
+    </div>
+
+    <section class="frog-gallery-panel" aria-labelledby="frog-gallery-title">
+      <div class="frog-gallery-head">
+        <h2 class="text-small" id="frog-gallery-title">奶蛙黑历史图鉴</h2>
+        <span class="frog-gallery-count text-small" id="frog-gallery-count" aria-live="polite">0/8 · 每张丑照让缺德倍率 +5%</span>
+      </div>
+      <div class="frog-gallery-grid" id="frog-gallery-grid"></div>
+    </section>
+
+    <div class="frog-bottom text-small">
+      <p>Q 戳肚皮 · 1–4 作案工具 · 丑照会随拍摄顺序变异</p>
+      <div class="frog-bottom-actions">
+        <span class="frog-credit">动画素材：timerring · MIT</span>
+        <button class="btn btn-ghost" id="frog-sound" type="button" aria-pressed="true">🔊 音效开</button>
+      </div>
+    </div>
+    <p class="sr-only" id="frog-announcer" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById("milk-frog-game");
+  if (!root || root.dataset.ready === "true") return;
+  root.dataset.ready = "true";
+
+  const $ = (id) => document.getElementById(id);
+  const elements = {
+    score: $("frog-score"),
+    multiplier: $("frog-multiplier"),
+    mult: $("frog-mult"),
+    time: $("frog-time"),
+    stage: $("frog-stage"),
+    speech: $("frog-speech"),
+    stateLabel: $("frog-state-label"),
+    poke: $("frog-poke"),
+    sprite: $("frog-sprite"),
+    frenzyBanner: $("frog-frenzy-banner"),
+    sanity: $("frog-sanity"),
+    sanityMeter: $("frog-sanity-meter"),
+    sanityBar: $("frog-sanity-bar"),
+    sanityCopy: $("frog-sanity-copy"),
+    log: $("frog-log"),
+    start: $("frog-start"),
+    startNote: $("frog-start-note"),
+    actions: [...root.querySelectorAll(".frog-action")],
+    event: $("frog-event"),
+    eventKicker: $("frog-event-kicker"),
+    eventTitle: $("frog-event-title"),
+    eventCopy: $("frog-event-copy"),
+    eventActions: $("frog-event-actions"),
+    eventMeter: $("frog-event-meter"),
+    eventBar: $("frog-event-bar"),
+    result: $("frog-result"),
+    resultTitle: $("frog-result-title"),
+    resultCopy: $("frog-result-copy"),
+    resultScore: $("frog-result-score"),
+    resultChips: $("frog-result-chips"),
+    restart: $("frog-restart"),
+    galleryGrid: $("frog-gallery-grid"),
+    galleryCount: $("frog-gallery-count"),
+    photoViewer: $("frog-photo-viewer"),
+    photoViewerImage: $("frog-photo-viewer-image"),
+    photoViewerSprite: $("frog-photo-viewer-sprite"),
+    photoViewerProp: $("frog-photo-viewer-prop"),
+    photoViewerSerial: $("frog-photo-viewer-serial"),
+    photoViewerTitle: $("frog-photo-viewer-title"),
+    photoViewerCaption: $("frog-photo-viewer-caption"),
+    photoViewerClose: $("frog-photo-viewer-close"),
+    flash: $("frog-flash"),
+    sound: $("frog-sound"),
+    announcer: $("frog-announcer")
+  };
+
+  const ANIMS = {
+    idle: { row: 0, frames: 6, speed: 125, loop: true },
+    runLeft: { row: 1, frames: 8, speed: 72, loop: true },
+    runRight: { row: 2, frames: 8, speed: 72, loop: true },
+    wave: { row: 3, frames: 4, speed: 115, loop: true },
+    laugh: { row: 4, frames: 5, speed: 92, loop: true },
+    sad: { row: 5, frames: 6, speed: 125, loop: true },
+    think: { row: 6, frames: 6, speed: 130, loop: true },
+    review: { row: 7, frames: 6, speed: 135, loop: true },
+    glitch: { row: 8, frames: 6, speed: 105, loop: true }
+  };
+
+  const PHOTO_FORMS = [
+    {
+      id: "dough",
+      title: "奶油发面脸",
+      caption: "奶蛙被发酵成了两倍宽，烤箱拒绝签收。",
+      fx: "photofx-squash",
+      prop: "🥛",
+      frameRow: 0,
+      frameCol: 1,
+      bonus: 100
+    },
+    {
+      id: "pixel",
+      title: "电子包浆",
+      caption: "这张图已经传了八百年，连像素都开始交社保。",
+      fx: "photofx-pixel",
+      prop: "🧦",
+      frameRow: 4,
+      frameCol: 2,
+      bonus: 120
+    },
+    {
+      id: "client",
+      title: "甲方想打人",
+      caption: "黑白高级感拉满，甲方还是说：能不能再圆一点？",
+      fx: "photofx-noir",
+      prop: "📺",
+      frameRow: 3,
+      frameCol: 1,
+      bonus: 140
+    },
+    {
+      id: "acid",
+      title: "奶龙同款滤镜",
+      caption: "绿色饱和度超标，奶蛙声称这是血缘觉醒。",
+      fx: "photofx-acid",
+      prop: "💚",
+      frameRow: 6,
+      frameCol: 2,
+      bonus: 160
+    },
+    {
+      id: "door",
+      title: "门缝受害者",
+      caption: "身份证照片拍摄失败：进门时被门夹成了平行四边形。",
+      fx: "photofx-door",
+      prop: "🚪",
+      frameRow: 8,
+      frameCol: 1,
+      bonus: 180
+    },
+    {
+      id: "shopping",
+      title: "午夜电视购物",
+      caption: "奶蛙正在推销自己，字幕写着“最后 3 斤”。",
+      fx: "photofx-tv",
+      prop: "🛒",
+      frameRow: 0,
+      frameCol: 3,
+      bonus: 200
+    },
+    {
+      id: "wanted",
+      title: "全网通缉蛙",
+      caption: "悬赏金额：三杯冰美式。照片比本人更像本人。",
+      fx: "photofx-wanted",
+      prop: "🚨",
+      frameRow: 4,
+      frameCol: 3,
+      bonus: 220
+    },
+    {
+      id: "glitch",
+      title: "赛博遗像",
+      caption: "系统检测到笑点溢出，建议立即断网并给奶蛙烧个路由器。",
+      fx: "photofx-glitch",
+      prop: "💾",
+      frameRow: 7,
+      frameCol: 1,
+      bonus: 260
+    }
+  ];
+
+  const PRANKS = {
+    coffee: {
+      icon: "☕",
+      base: 120,
+      sanity: 18,
+      anim: "runRight",
+      lines: [
+        "冰美式下肚，奶蛙瞳孔里同时打开了 16 个网页。",
+        "奶蛙开始用腹语背诵 800 位圆周率，还押韵。",
+        "奶蛙原地运行到风扇狂转，但它的风扇在哪里？"
+      ]
+    },
+    sock: {
+      icon: "🧦",
+      base: 155,
+      sanity: 22,
+      anim: "sad",
+      lines: [
+        "奶蛙瞳孔地震：这是什么跨时代的生化武器？",
+        "奶蛙捂着肚子后退三步，连尾巴都开始道歉。",
+        "臭袜攻击命中。奶蛙第一次理解了什么是“眼前一黄”。"
+      ]
+    },
+    nailong: {
+      icon: "📺",
+      base: 135,
+      sanity: 16,
+      anim: "wave",
+      lines: [
+        "奶龙刚挥手，奶蛙的笑容就像共享单车一样被人骑走了。",
+        "奶蛙指着屏幕：凭什么它比我圆？",
+        "视频播放完毕，奶蛙申请与奶龙断绝同门关系。"
+      ]
+    },
+    photo: {
+      icon: "📸",
+      base: 165,
+      sanity: 20,
+      anim: "laugh",
+      lines: [
+        "咔嚓！奶蛙的丑照已写入祖谱第一页。",
+        "闪光灯太亮，奶蛙短暂看不见自己的尊严。",
+        "新头像审核失败：过度抽象，涉嫌恐怖谷。"
+      ]
+    }
+  };
+
+  const TAP_LINES = [
+    "手感不错。奶蛙记仇 +1。",
+    "奶蛙发出一声 Q 弹的“呱”，疑似肚皮自带音效。",
+    "奶蛙没有躲，它在等你解释自己的行为。",
+    "这一指，戳出了当代互联网的空虚。",
+    "奶蛙开始怀疑你是不是有正经工作。",
+    "肚皮：弹性库存充足，仇恨库存更充足。",
+    "奶蛙决定把你也写进它的毕业论文。",
+    "戳得很好，下次别戳了。奶蛙说的。"
+  ];
+
+  const EVENTS = [
+    {
+      kicker: "突发插播 · 亲戚来电",
+      title: "奶龙突然打来视频电话",
+      copy: "奶蛙脸色从黄色变成了另一种黄色。电话那头，奶龙正在展示自己刚学会的新舞。",
+      choices: [
+        {
+          label: "接通并喊爸",
+          score: 240,
+          sanity: -10,
+          anim: "wave",
+          bubble: "奶龙沉默三秒挂断。奶蛙赢了，但赢得很难看。",
+          log: "家庭伦理剧成功拖垮双方通讯录。"
+        },
+        {
+          label: "挂断并回丑照",
+          score: 340,
+          sanity: -18,
+          anim: "laugh",
+          bubble: "奶蛙把丑照发了过去。奶龙已保存为家人头像。",
+          log: "亲情根据像素点进一步破裂。"
+        }
+      ]
+    },
+    {
+      kicker: "突发插播 · 直播事故",
+      title: "奶蛙开了直播，但只卖出三单",
+      copy: "商品写着“手工奶嗝，纯天然，不限量”。观众 3 人，其中两个是你的小号。",
+      choices: [
+        {
+          label: "把臭袜挂上链接",
+          score: 390,
+          sanity: -21,
+          anim: "sad",
+          bubble: "臭袜一秒售罄。奶蛙开始怀疑互联网的品味。",
+          log: "异味商品完成惊人转化率。"
+        },
+        {
+          label: "现场表演胸口碎奶瓶",
+          score: 280,
+          sanity: -12,
+          anim: "runLeft",
+          bubble: "奶瓶没碎，奶蛙的偶像包袱碎了。",
+          log: "才艺展示成功吓跑最后一名观众。"
+        }
+      ]
+    },
+    {
+      kicker: "突发插播 · 生理危机",
+      title: "体重秤当众念出了奶蛙的体重",
+      copy: "电子秤显示：“请一个一个站。”奶蛙身边明明没有任何人。",
+      choices: [
+        {
+          label: "拍照发家庭群",
+          score: 360,
+          sanity: -25,
+          anim: "wave",
+          bubble: "奶蛙被你宣判社会性死亡。家庭群开始刷屏“哈哈哈”。",
+          log: "公开处刑完成，亲戚关系更加紧密。"
+        },
+        {
+          label: "把秤调成 0.1kg",
+          score: 180,
+          sanity: -8,
+          anim: "think",
+          bubble: "奶蛙感动了。电子秤报警了。",
+          log: "物理规律遭到临时篡改。"
+        }
+      ]
+    },
+    {
+      kicker: "突发插播 · 神秘装置",
+      title: "“禁止按”的红色按钮亮了",
+      copy: "按钮旁边写着：禁止按。奶蛙已经把爪子放上去了，还用眼神鼓励你。",
+      choices: [
+        {
+          label: "按一下",
+          score: 210,
+          sanity: -10,
+          anim: "wave",
+          bubble: "灯灭了。三秒后，灯又以十倍亮度亮了起来。",
+          log: "基本遵守了人类的禁止规范。"
+        },
+        {
+          label: "闭眼连按十下",
+          score: 470,
+          sanity: -32,
+          anim: "glitch",
+          bubble: "实验室响起了《好运来》，奶蛙则开始倒着走。",
+          log: "按钮已被列入国际危险品清单。"
+        }
+      ]
+    },
+    {
+      kicker: "突发插播 · 社交媒体",
+      title: "奶蛙把你设成了置顶好友",
+      copy: "它还给你的每条朋友圈都点了赞，包括三年前那条“再也不熬夜”。",
+      choices: [
+        {
+          label: "感动地回赞",
+          score: 260,
+          sanity: -9,
+          anim: "wave",
+          bubble: "你们互相点赞了 47 次。平台判定为异常交易。",
+          log: "赛博友谊完成一次高风险握手。"
+        },
+        {
+          label: "把它移出置顶",
+          score: 320,
+          sanity: -24,
+          anim: "sad",
+          bubble: "奶蛙撤回了一个奶嗝，决定三天不理你。",
+          log: "家庭冷战已进入倒数计时。"
+        }
+      ]
+    }
+  ];
+
+  const state = {
+    running: false,
+    ended: false,
+    timeLeft: 40,
+    score: 0,
+    sanity: 100,
+    combo: 0,
+    bestCombo: 0,
+    maxMultiplier: 1,
+    taps: 0,
+    pranks: 0,
+    events: 0,
+    frenzies: 0,
+    frenzy: false,
+    frenzyLeft: 0,
+    lastHitAt: 0,
+    lastActionAt: 0,
+    cooldowns: {},
+    event: null,
+    eventTime: 0,
+    nextEventAt: 12,
+    eventIndex: 0,
+    photoForms: [],
+    photoCaptures: 0,
+    photoViewing: false,
+    bestScore: 0
+  };
+
+  let gameLoopId = null;
+  let spriteLoopId = null;
+  let lastFrame = 0;
+  let moodTimer = null;
+  let spriteAnimation = { name: "idle", startedAt: performance.now(), holdMs: 0 };
+  let soundEnabled = true;
+  let audioContext = null;
+
+  const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value));
+  const choose = (list) => list[Math.floor(Math.random() * list.length)];
+  const multiplierNow = () => {
+    const comboBoost = Math.min(2, Math.floor(Math.max(0, state.combo - 1) / 3) * .35);
+    const photoBoost = 1 + state.photoForms.length * .05;
+    return (1 + comboBoost) * (state.frenzy ? 2 : 1) * photoBoost;
+  };
+  const formatScore = (value) => String(Math.max(0, Math.round(value))).padStart(5, "0");
+
+  function loadPhotoAlbum() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("naifrog-blackmail-v1") || "[]");
+      return Array.isArray(saved)
+        ? saved.filter((id) => PHOTO_FORMS.some((form) => form.id === id))
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function savePhotoAlbum() {
+    try {
+      window.localStorage.setItem("naifrog-blackmail-v1", JSON.stringify(state.photoForms));
+    } catch {
+      // The game remains playable when local storage is unavailable.
+    }
+  }
+
+  function loadBestScore() {
+    try {
+      return Number(window.localStorage.getItem("naifrog-best-score-v1")) || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function saveBestScore(score) {
+    try {
+      window.localStorage.setItem("naifrog-best-score-v1", String(score));
+    } catch {
+      // Local persistence is optional.
+    }
+  }
+
+  function resetState() {
+    Object.assign(state, {
+      running: false,
+      ended: false,
+      timeLeft: 40,
+      score: 0,
+      sanity: 100,
+      combo: 0,
+      bestCombo: 0,
+      maxMultiplier: 1,
+      taps: 0,
+      pranks: 0,
+      events: 0,
+      frenzies: 0,
+      frenzy: false,
+      frenzyLeft: 0,
+      lastHitAt: 0,
+      lastActionAt: 0,
+      cooldowns: {},
+      event: null,
+      eventTime: 0,
+      nextEventAt: 12,
+      eventIndex: 0,
+      photoCaptures: 0,
+      photoViewing: false
+    });
+    state.photoForms = loadPhotoAlbum();
+  }
+
+  function bubble(text) {
+    elements.speech.textContent = text;
+    elements.speech.animate?.(
+      [
+        { transform: "translateY(3px) scale(.97)", opacity: .55 },
+        { transform: "translateY(0) scale(1)", opacity: 1 }
+      ],
+      { duration: 180, easing: "ease-out" }
+    );
+  }
+
+  function pushLog(text) {
+    const item = document.createElement("li");
+    item.textContent = text;
+    elements.log.prepend(item);
+    while (elements.log.children.length > 3) elements.log.lastElementChild.remove();
+  }
+
+  function setAnimation(name, holdMs = 0) {
+    const config = ANIMS[name] || ANIMS.idle;
+    spriteAnimation = {
+      name: config === ANIMS[name] ? name : "idle",
+      startedAt: performance.now(),
+      holdMs
+    };
+    drawSpriteFrame();
+  }
+
+  function drawSpriteFrame() {
+    const config = ANIMS[spriteAnimation.name] || ANIMS.idle;
+    const elapsed = Math.max(0, performance.now() - spriteAnimation.startedAt);
+    if (spriteAnimation.holdMs && elapsed >= spriteAnimation.holdMs) {
+      setAnimation(state.frenzy ? "laugh" : "idle");
+      return;
+    }
+    const rawFrame = Math.floor(elapsed / config.speed);
+    const frame = rawFrame % config.frames;
+    const x = (frame / 7) * 100;
+    const y = (config.row / 8) * 100;
+    elements.sprite.style.backgroundPosition = `${x}% ${y}%`;
+  }
+
+  function bumpCombo(now) {
+    state.combo = now - state.lastHitAt < 2500 ? Math.min(99, state.combo + 1) : 1;
+    state.lastHitAt = now;
+    state.bestCombo = Math.max(state.bestCombo, state.combo);
+  }
+
+  function addScore(points) {
+    state.score += Math.round(points);
+  }
+
+  function showPopup(text, emoji = "💥") {
+    const pop = document.createElement("span");
+    pop.className = "frog-pop text-small";
+    pop.textContent = `${emoji} ${text}`;
+    elements.stage.appendChild(pop);
+    window.setTimeout(() => pop.remove(), 1050);
+  }
+
+  function debris(count = 6) {
+    const symbols = ["😂", "🧦", "☕", "📸", "💥", "🤡", "🧪", "🐸"];
+    const amount = Math.min(14, count);
+    for (let index = 0; index < amount; index += 1) {
+      const particle = document.createElement("span");
+      particle.className = "frog-debris";
+      particle.textContent = choose(symbols);
+      particle.setAttribute("aria-hidden", "true");
+      particle.style.setProperty("--drift", `${(Math.random() - .5) * 190}px`);
+      particle.style.setProperty("--spin", `${(Math.random() - .5) * 110}deg`);
+      particle.style.animationDelay = `${index * 36}ms`;
+      elements.stage.appendChild(particle);
+      window.setTimeout(() => particle.remove(), 1150 + index * 40);
+    }
+  }
+
+  function cameraFlash() {
+    elements.flash.classList.remove("is-on");
+    void elements.flash.offsetWidth;
+    elements.flash.classList.add("is-on");
+    window.setTimeout(() => elements.flash.classList.remove("is-on"), 380);
+  }
+
+  function positionPhotoSprite(sprite, form) {
+    sprite.style.backgroundPosition = `${(form.frameCol / 7) * 100}% ${(form.frameRow / 8) * 100}%`;
+  }
+
+  function paintPhoto(container, sprite, prop, serial, form) {
+    container.className = `frog-photo-image ${form.fx}`;
+    positionPhotoSprite(sprite, form);
+    prop.textContent = form.prop;
+    if (serial) serial.textContent = `NAIWA-${String(PHOTO_FORMS.indexOf(form) + 1).padStart(2, "0")}F`;
+  }
+
+  function buildGallery() {
+    elements.galleryGrid.replaceChildren();
+    PHOTO_FORMS.forEach((form) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "frog-photo-thumb cursor-interaction";
+      button.dataset.photo = form.id;
+      button.disabled = true;
+
+      const art = document.createElement("span");
+      art.className = "frog-photo-thumb-art";
+      const sprite = document.createElement("span");
+      sprite.className = "frog-photo-sprite";
+      positionPhotoSprite(sprite, form);
+      art.classList.add(form.fx);
+      const prop = document.createElement("span");
+      prop.className = "frog-photo-prop";
+      prop.textContent = form.prop;
+      prop.setAttribute("aria-hidden", "true");
+      const lock = document.createElement("span");
+      lock.className = "frog-photo-lock";
+      lock.textContent = "?";
+      lock.setAttribute("aria-hidden", "true");
+      art.append(sprite, prop, lock);
+
+      const label = document.createElement("span");
+      label.className = "frog-photo-label text-small";
+      label.textContent = "未解锁";
+
+      button.append(art, label);
+      button.addEventListener("click", () => {
+        if (state.photoForms.includes(form.id)) showPhotoViewer(form);
+      });
+      elements.galleryGrid.appendChild(button);
+    });
+  }
+
+  function showPhotoViewer(form) {
+    if (state.event) return;
+    state.photoViewing = true;
+    paintPhoto(
+      elements.photoViewerImage,
+      elements.photoViewerSprite,
+      elements.photoViewerProp,
+      elements.photoViewerSerial,
+      form
+    );
+    elements.photoViewerTitle.textContent = form.title;
+    elements.photoViewerCaption.textContent = form.caption;
+    elements.photoViewer.hidden = false;
+    elements.announcer.textContent = `${form.title}。${form.caption}`;
+    render();
+    window.setTimeout(() => elements.photoViewerClose.focus(), 30);
+  }
+
+  function closePhotoViewer() {
+    state.photoViewing = false;
+    elements.photoViewer.hidden = true;
+    render();
+  }
+
+  function showPhotoMoment(form, isNew) {
+    document.querySelectorAll(".frog-photo-moment").forEach((node) => node.remove());
+    const card = document.createElement("div");
+    card.className = "frog-photo-moment";
+    card.setAttribute("aria-hidden", "true");
+
+    const image = document.createElement("span");
+    const sprite = document.createElement("span");
+    sprite.className = "frog-photo-sprite";
+    const prop = document.createElement("span");
+    prop.className = "frog-photo-prop";
+    const serial = document.createElement("span");
+    serial.className = "frog-photo-serial text-small";
+    paintPhoto(image, sprite, prop, serial, form);
+    image.append(sprite, prop, serial);
+
+    const title = document.createElement("span");
+    title.className = "frog-photo-art-label";
+    title.textContent = isNew ? `NEW · ${form.title}` : form.title;
+    const caption = document.createElement("span");
+    caption.className = "frog-photo-caption text-small";
+    caption.textContent = form.caption;
+    card.append(image, title, caption);
+    elements.stage.appendChild(card);
+    window.setTimeout(() => card.remove(), 1800);
+  }
+
+  function capturePhoto() {
+    const unseen = PHOTO_FORMS.filter((form) => !state.photoForms.includes(form.id));
+    const form = unseen[0] || choose(PHOTO_FORMS);
+    const before = state.photoForms.length;
+    const isNew = !state.photoForms.includes(form.id);
+    state.photoCaptures += 1;
+    if (isNew) {
+      state.photoForms.push(form.id);
+      savePhotoAlbum();
+      addScore(form.bonus);
+      pushLog(`📸 新丑照解锁「${form.title}」+${form.bonus}`);
+    } else {
+      addScore(55);
+      pushLog(`📸 「${form.title}」重返犯罪现场 +55`);
+    }
+    showPhotoMoment(form, isNew);
+    bubble(`${form.title}：${form.caption}`);
+
+    if (before < 4 && state.photoForms.length >= 4) {
+      addScore(320);
+      pushLog("🏆 四形态达成：奶蛙开始害怕镜头 +320");
+      showPopup("丑照达人 +320", "🏆");
+    }
+    if (before < 8 && state.photoForms.length >= 8) {
+      addScore(900);
+      pushLog("💀 全形态达成：家族群已禁止转发 +900");
+      showPopup("全形态丑照 +900", "💀");
+      debris(14);
+    }
+  }
+
+  function render() {
+    elements.score.textContent = formatScore(state.score);
+    elements.time.textContent = `${Math.max(0, state.timeLeft).toFixed(1)}s`;
+    state.maxMultiplier = Math.max(state.maxMultiplier, multiplierNow());
+    elements.mult.textContent = `×${multiplierNow().toFixed(1)}`;
+    elements.multiplier.dataset.hot = String(state.combo >= 5 || state.frenzy);
+
+    const sanity = Math.max(0, Math.round(state.sanity));
+    elements.sanity.textContent = String(sanity);
+    elements.sanityMeter.setAttribute("aria-valuenow", String(sanity));
+    elements.sanityBar.style.width = `${clamp(sanity)}%`;
+    elements.stage.classList.toggle("is-frenzy", state.frenzy);
+    elements.frenzyBanner.hidden = !state.frenzy;
+
+    if (state.frenzy) {
+      elements.sanityCopy.textContent = `已欠费 ${Math.ceil(state.frenzyLeft)} 秒，奶蛙濒临变异。`;
+      elements.stateLabel.textContent = "暴走 · 已失去表情管理";
+    } else if (!state.running) {
+      elements.sanityCopy.textContent = state.ended ? "实验结束，理智仍在挂失中。" : "尚未开始怀疑人生。";
+      elements.stateLabel.textContent = state.ended ? "收工 · 拒绝复盘" : "待机 · 假装乖巧";
+    } else if (state.sanity > 70) {
+      elements.sanityCopy.textContent = "表面镇定，内心已经骂了八百遍。";
+      elements.stateLabel.textContent = "稳定 · 正在记仇";
+    } else if (state.sanity > 35) {
+      elements.sanityCopy.textContent = "开始怀疑你是奶龙派来的。";
+      elements.stateLabel.textContent = "紧绷 · 笑容逐渐消失";
+    } else {
+      elements.sanityCopy.textContent = "笑容已经出现批量像素错误。";
+      elements.stateLabel.textContent = "危险 · 请勿继续讲理";
+    }
+
+    elements.actions.forEach((button) => {
+      button.disabled = !state.running || state.ended || Boolean(state.event) || state.photoViewing;
+    });
+    elements.galleryCount.textContent = `${state.photoForms.length}/8 · 每张丑照让缺德倍率 +5%`;
+    elements.galleryGrid.querySelectorAll(".frog-photo-thumb").forEach((button, index) => {
+      const form = PHOTO_FORMS[index];
+      const unlocked = state.photoForms.includes(form.id);
+      button.disabled = !unlocked || Boolean(state.event);
+      button.classList.toggle("is-unlocked", unlocked);
+      button.querySelector(".frog-photo-label").textContent = unlocked ? form.title : "未解锁";
+      button.setAttribute("aria-label", unlocked ? `查看丑照：${form.title}` : `未解锁丑照 ${index + 1}`);
+    });
+    elements.start.disabled = state.running;
+
+    if (state.event) {
+      const ratio = clamp(state.eventTime / 5.5, 0, 1);
+      elements.eventBar.style.width = `${ratio * 100}%`;
+      elements.eventMeter.setAttribute("aria-valuenow", String(Math.max(0, state.eventTime).toFixed(1)));
+    }
+  }
+
+  function startGame() {
+    if (state.running) return;
+    if (gameLoopId) window.clearInterval(gameLoopId);
+    resetState();
+    state.running = true;
+    lastFrame = performance.now();
+    elements.result.hidden = true;
+    elements.event.hidden = true;
+    elements.photoViewer.hidden = true;
+    state.photoViewing = false;
+    elements.start.disabled = true;
+    elements.start.textContent = "实验中…";
+    elements.startNote.textContent = "建议立刻开始缺德，别让奶蛙缓过来";
+    elements.log.replaceChildren();
+    pushLog("实验启动：奶蛙开始假装自己不是实验品。");
+    bubble("奶蛙已就位。你的缺德许可证有效 40 秒。");
+    elements.announcer.textContent = "整活开始。点击奶蛙，或使用四个作案工具。";
+    setAnimation("idle");
+    render();
+    playSound("start");
+    gameLoopId = window.setInterval(gameLoop, 100);
+  }
+
+  function gameLoop() {
+    if (!state.running) return;
+    const now = performance.now();
+    const dt = Math.min(.25, Math.max(0, (now - lastFrame) / 1000));
+    lastFrame = now;
+
+    if (state.photoViewing) return;
+
+    if (state.event) {
+      state.eventTime -= dt;
+      if (state.eventTime <= 0) missEvent();
+      render();
+      return;
+    }
+
+    state.timeLeft -= dt;
+    if (state.frenzy) {
+      state.frenzyLeft -= dt;
+      if (state.frenzyLeft <= 0) recoverFromFrenzy();
+    }
+
+    if (state.timeLeft <= 0) {
+      endGame();
+      return;
+    }
+
+    const elapsed = 40 - state.timeLeft;
+    if (elapsed >= state.nextEventAt && !state.event) openEvent();
+    render();
+  }
+
+  function pokeFrog() {
+    if (state.event || state.photoViewing) return;
+    if (!state.running) {
+      bubble("先点“开始整活”。规矩可以缺德，流程不能乱。");
+      setAnimation("wave", 650);
+      playSound("poke");
+      return;
+    }
+    if (state.ended) return;
+    const now = performance.now();
+    bumpCombo(now);
+    state.taps += 1;
+    const points = Math.max(4, Math.round(7 * multiplierNow()));
+    addScore(points);
+    state.sanity = clamp(state.sanity - .55);
+    bubble(choose(TAP_LINES));
+    setAnimation(state.frenzy ? "laugh" : "wave", state.frenzy ? 0 : 330);
+    showPopup(`+${points}`, "👆");
+    if (state.taps % 3 === 0) debris(3);
+    playSound("poke");
+    if (state.sanity <= 0) triggerFrenzy();
+    render();
+  }
+
+  function usePrank(key) {
+    if (!state.running || state.ended || state.event || state.photoViewing) return;
+    const prank = PRANKS[key];
+    if (!prank) return;
+    const now = performance.now();
+    if (now < (state.cooldowns[key] || 0)) {
+      bubble("手太快了，奶蛙还没把上一条缺德行为记进账。");
+      playSound("oops");
+      return;
+    }
+    state.cooldowns[key] = now + 620;
+    state.lastActionAt = now;
+    state.pranks += 1;
+    bumpCombo(now);
+    const points = Math.round(prank.base * multiplierNow());
+    addScore(points);
+    state.sanity = clamp(state.sanity - prank.sanity);
+    const line = choose(prank.lines);
+    bubble(line);
+    pushLog(`${prank.icon} ${line} +${points}`);
+    setAnimation(prank.anim, 900);
+    showPopup(`+${points}`, prank.icon);
+    debris(4 + Math.min(6, Math.floor(state.combo / 3)));
+    if (key === "photo") {
+      cameraFlash();
+      capturePhoto();
+    }
+    playSound(key);
+    if (state.sanity <= 0) triggerFrenzy();
+    elements.announcer.textContent = elements.speech.textContent;
+    render();
+  }
+
+  function triggerFrenzy() {
+    if (state.frenzy) return;
+    state.frenzy = true;
+    state.frenzyLeft = 7;
+    state.frenzies += 1;
+    state.sanity = 0;
+    addScore(280);
+    bubble("理智归零！奶蛙展开了第三形态，并且拒绝解释。");
+    pushLog("🚨 暴走启动：奶蛙开始倒着笑、正着疯。");
+    showPopup("暴走！+280", "🚨");
+    setAnimation("laugh");
+    debris(12);
+    playSound("frenzy");
+    elements.announcer.textContent = "奶蛙暴走，得分翻倍。";
+    render();
+  }
+
+  function recoverFromFrenzy() {
+    state.frenzy = false;
+    state.frenzyLeft = 0;
+    state.sanity = 55;
+    bubble("奶蛙理智回充至 55。眼神已经回不去了，但生活还要继续。");
+    pushLog("🧯 暴走暂停：奶蛙声称自己刚才只是伸了个懒腰。");
+    setAnimation("sad", 1000);
+    playSound("recover");
+    render();
+  }
+
+  function openEvent() {
+    const event = EVENTS[state.eventIndex % EVENTS.length];
+    state.eventIndex += 1;
+    state.events += 1;
+    state.nextEventAt += 13;
+    state.event = event;
+    state.eventTime = 5.5;
+    elements.eventKicker.textContent = event.kicker;
+    elements.eventTitle.textContent = event.title;
+    elements.eventCopy.textContent = event.copy;
+    elements.eventActions.replaceChildren();
+    event.choices.forEach((choice, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = index === 1 ? "btn btn-primary" : "btn";
+      button.textContent = `${index === 0 ? "A" : "B"} · ${choice.label}`;
+      button.addEventListener("click", () => resolveEvent(choice));
+      elements.eventActions.appendChild(button);
+    });
+    elements.event.hidden = false;
+    elements.eventBar.style.width = "100%";
+    bubble("插播事故：奶蛙暂停发疯，等你做出更缺德的选择。");
+    setAnimation("think");
+    playSound("event");
+    render();
+    window.setTimeout(() => elements.eventActions.querySelector("button")?.focus(), 40);
+    elements.announcer.textContent = `突发插播：${event.title}`;
+  }
+
+  function resolveEvent(choice) {
+    if (!state.event) return;
+    addScore(choice.score);
+    state.sanity = clamp(state.sanity + choice.sanity);
+    state.event = null;
+    state.eventTime = 0;
+    elements.event.hidden = true;
+    bubble(choice.bubble);
+    pushLog(`🎬 ${choice.log} +${choice.score}`);
+    setAnimation(choice.anim, 1100);
+    showPopup(`+${choice.score}`, "🎬");
+    debris(8);
+    playSound("eventwin");
+    if (state.sanity <= 0) triggerFrenzy();
+    elements.announcer.textContent = choice.bubble;
+    render();
+  }
+
+  function missEvent() {
+    if (!state.event) return;
+    state.event = null;
+    elements.event.hidden = true;
+    state.score = Math.max(0, state.score - 70);
+    state.combo = 0;
+    state.sanity = clamp(state.sanity - 8);
+    bubble("奶蛙等你自己做决定，等到开始打哈欠。机会已过期，奶蛙决定单独发疯。");
+    pushLog("⌛ 犹豫太久：扣 70 抽象值，奶蛙已自行发病。");
+    setAnimation("sad", 900);
+    playSound("oops");
+    render();
+  }
+
+  function endGame() {
+    if (!state.running) return;
+    state.running = false;
+    state.ended = true;
+    state.timeLeft = 0;
+    if (gameLoopId) window.clearInterval(gameLoopId);
+    gameLoopId = null;
+    elements.event.hidden = true;
+    state.event = null;
+    state.frenzy = false;
+    state.photoViewing = false;
+    elements.photoViewer.hidden = true;
+    elements.start.disabled = true;
+    elements.start.textContent = "实验结束";
+    elements.startNote.textContent = "报告已生成，维权请找奶龙";
+    state.bestScore = Math.max(state.bestScore, Math.round(state.score));
+    saveBestScore(state.bestScore);
+
+    const score = Math.round(state.score);
+    let title = "礼貌性社死";
+    let copy = "奶蛙没有疯，它只是暂时不想跟你说话。";
+    if (score >= 4600) {
+      title = "奶蛙本蛙来投诉了";
+      copy = "你成功把奶蛙整成了互联网公共事件。奶龙表示概不负责。";
+    } else if (score >= 3300) {
+      title = "互联网抽象遗产";
+      copy = "建议把本次实验刻成光盘，埋进未来考古现场。";
+    } else if (score >= 2100) {
+      title = "奶蛙认证缺德带师";
+      copy = "奶蛙已失去表情管理，但还没有失去民事诉讼能力。";
+    } else if (score >= 900) {
+      title = "手欠实习生";
+      copy = "缺德手法略显生疏，但奶蛙已经记住了你的脸。";
+    }
+
+    elements.resultTitle.textContent = title;
+    elements.resultCopy.textContent = copy;
+    elements.resultScore.textContent = String(score);
+    elements.resultChips.replaceChildren();
+    [
+      `最高倍率 ×${state.maxMultiplier.toFixed(1)}`,
+      `戳肚皮 ${state.taps}`,
+      `缺德操作 ${state.pranks}`,
+      `丑照 ${state.photoForms.length}/8`,
+      `暴走 ${state.frenzies}`,
+      `事故 ${state.events}`,
+      `本机最佳 ${state.bestScore}`
+    ].forEach((label) => {
+      const chip = document.createElement("span");
+      chip.textContent = label;
+      elements.resultChips.appendChild(chip);
+    });
+    elements.result.hidden = false;
+    bubble("实验结束。奶蛙正在后台卸载你的好友关系。");
+    setAnimation("review");
+    playSound("end");
+    elements.announcer.textContent = `实验结束，称号：${title}，抽象值 ${score}。`;
+    render();
+    persistGameState("complete");
+    window.setTimeout(() => elements.restart.focus(), 50);
+  }
+
+  function persistGameState(phase) {
+    try {
+      window.dispatchEvent(new CustomEvent("naifrog:run-complete", {
+        detail: {
+          game: "奶蛙，给我笑！",
+          phase,
+          score: Math.round(state.score),
+          bestCombo: state.bestCombo,
+          taps: state.taps,
+          pranks: state.pranks,
+          frenzies: state.frenzies,
+          photos: state.photoForms.length
+        }
+      }));
+    } catch {
+      // Custom-event persistence is optional.
+    }
+  }
+
+  function getAudioContext() {
+    if (!soundEnabled) return null;
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return null;
+    if (!audioContext) audioContext = new AudioCtor();
+    if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+    return audioContext;
+  }
+
+  function tone(frequency, duration, type = "sine", delay = 0, volume = .028) {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime + delay;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + .01);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + .03);
+  }
+
+  function slide(frequency, endFrequency, duration, type = "sine", volume = .025) {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+    gain.gain.setValueAtTime(volume, start);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + .03);
+  }
+
+  function playSound(type) {
+    if (!soundEnabled) return;
+    if (type === "poke") {
+      tone(620, .055, "triangle");
+      tone(880, .05, "triangle", .035);
+    } else if (type === "coffee") {
+      slide(240, 760, .18, "square", .018);
+    } else if (type === "sock") {
+      slide(150, 70, .3, "sawtooth", .018);
+    } else if (type === "nailong") {
+      tone(660, .08, "triangle");
+      tone(520, .1, "triangle", .08);
+    } else if (type === "photo") {
+      tone(980, .035, "square", 0, .018);
+      tone(140, .08, "square", .05, .014);
+    } else if (type === "event") {
+      [440, 554, 659].forEach((frequency, index) => tone(frequency, .09, "triangle", index * .07));
+    } else if (type === "eventwin") {
+      [523, 659, 784].forEach((frequency, index) => tone(frequency, .12, "sine", index * .07));
+    } else if (type === "frenzy") {
+      [261, 392, 523, 784, 1046].forEach((frequency, index) => tone(frequency, .11, "square", index * .06, .018));
+    } else if (type === "recover") {
+      slide(620, 220, .26, "sine", .022);
+    } else if (type === "oops") {
+      tone(180, .1, "sawtooth", 0, .018);
+      tone(130, .14, "sawtooth", .09, .018);
+    } else if (type === "start") {
+      tone(294, .08);
+      tone(440, .12, "sine", .08);
+    } else if (type === "end") {
+      tone(330, .12);
+      tone(294, .14, "sine", .12);
+      tone(220, .2, "sine", .24);
+    }
+  }
+
+  function resetUI() {
+    resetState();
+    elements.result.hidden = true;
+    elements.event.hidden = true;
+    elements.photoViewer.hidden = true;
+    elements.start.disabled = false;
+    elements.start.textContent = "开始整活";
+    elements.startNote.textContent = "40 秒 · 没有奶蛙受到实质伤害";
+    elements.log.replaceChildren();
+    pushLog("系统提示：此实验没有对照组，因为没人愿意来。");
+    bubble("奶蛙正在装无辜。先点“开始整活”。");
+    elements.announcer.textContent = "";
+    setAnimation("idle");
+    render();
+  }
+
+  elements.start.addEventListener("click", startGame);
+  elements.restart.addEventListener("click", startGame);
+  elements.poke.addEventListener("click", pokeFrog);
+  elements.actions.forEach((button) => {
+    button.addEventListener("click", () => usePrank(button.dataset.prank));
+  });
+  elements.photoViewerClose.addEventListener("click", closePhotoViewer);
+  elements.sound.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    elements.sound.setAttribute("aria-pressed", String(soundEnabled));
+    elements.sound.textContent = soundEnabled ? "🔊 音效开" : "🔇 音效关";
+    if (soundEnabled) playSound("nailong");
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (!state.running || state.ended || state.event || state.photoViewing) return;
+    const map = { "1": "coffee", "2": "sock", "3": "nailong", "4": "photo" };
+    if (map[event.key]) {
+      event.preventDefault();
+      usePrank(map[event.key]);
+    } else if (event.key.toLowerCase() === "q") {
+      event.preventDefault();
+      pokeFrog();
+    }
+  });
+
+  spriteLoopId = window.setInterval(drawSpriteFrame, 70);
+  const spriteProbe = new Image();
+  spriteProbe.addEventListener("load", () => root.classList.add("frog-sprite-ready"), { once: true });
+  spriteProbe.src = "../assets/naifrog-spritesheet.webp";
+  state.bestScore = loadBestScore();
+  buildGallery();
+  resetUI();
+})();
+</script>
