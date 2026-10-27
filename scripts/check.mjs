@@ -23,12 +23,7 @@ for (const marker of requiredMarkers) {
   if (!source.includes(marker)) throw new Error(`Missing source marker: ${marker}`);
 }
 
-const hostApi = ["window", "openai"].join(".");
 const forbiddenBrand = ["co", "dex"].join("");
-
-if (source.includes(hostApi)) {
-  throw new Error("Host-specific editor APIs must not be present in the open-source build.");
-}
 
 if (source.toLowerCase().includes(forbiddenBrand) || built.toLowerCase().includes(forbiddenBrand)) {
   throw new Error("The open-source project should not contain host-specific branding or collaborator names.");

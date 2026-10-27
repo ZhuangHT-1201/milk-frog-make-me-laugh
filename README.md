@@ -9,7 +9,7 @@ This is not a pet simulator. It is a consent-free photoshoot with a score multip
 ## Features
 
 - Animated Milk Frog character with several expressive poses.
-- Four prank tools and a clickable frog with combo scoring.
+- Four prank tools, a clickable frog, and disappearing bonus targets.
 - Eight unlockable “blackmail photo” forms, each with a permanent +5% score bonus.
 - Random disaster events with branching choices.
 - A sanity meter that triggers a three-frog meltdown at zero.

@@ -158,13 +158,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
       box-sizing: border-box;
     }
 
+    #milk-frog-game [hidden] {
+      display: none !important;
+    }
+
     #milk-frog-game button {
       font: inherit;
     }
 
     .frog-shell {
       display: grid;
-      gap: 14px;
+      gap: 10px;
       width: 100%;
       max-width: 100%;
       overflow-x: clip;
@@ -192,11 +196,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
       margin: 0;
       font-weight: 500;
       letter-spacing: -.045em;
-    }
-
-    .frog-tagline {
-      margin: 4px 0 0;
-      color: var(--muted-foreground);
     }
 
     .frog-dashboard {
@@ -240,15 +239,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
     }
 
     .frog-main {
-      display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(220px, .55fr);
-      gap: 14px;
-      align-items: stretch;
+      display: block;
     }
 
     .frog-stage {
       position: relative;
-      min-height: 390px;
+      min-height: 430px;
       overflow: hidden;
       border-radius: 24px;
       color: var(--frog-ink);
@@ -301,27 +297,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
       white-space: nowrap;
       z-index: 0;
       pointer-events: none;
-    }
-
-    .frog-sign {
-      position: absolute;
-      right: 20px;
-      top: 33px;
-      width: 112px;
-      padding: 9px;
-      border: 3px solid var(--frog-ink);
-      border-radius: 5px;
-      color: var(--frog-ink);
-      background: var(--frog-paper);
-      text-align: center;
-      transform: rotate(5deg);
-      box-shadow: 5px 5px 0 color-mix(in srgb, var(--frog-ink) 16%, transparent);
-      z-index: 4;
-    }
-
-    .frog-sign strong {
-      display: block;
-      font-weight: 500;
     }
 
     .frog-speech {
@@ -493,6 +468,30 @@ button, a { -webkit-tap-highlight-color: transparent; }
       display: none;
     }
 
+    .frog-bonus {
+      position: absolute;
+      left: var(--bonus-x, 50%);
+      top: var(--bonus-y, 45%);
+      z-index: 24;
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      padding: 0;
+      border: 3px solid var(--frog-ink);
+      border-radius: 50%;
+      color: var(--frog-ink);
+      background: var(--frog-yellow);
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--frog-yellow) 30%, transparent), 0 6px 16px var(--frog-shadow);
+      transform: translate(-50%, -50%);
+      animation: frog-bonus-pop .3s cubic-bezier(.2,.9,.3,1), frog-bonus-pulse .7s ease-in-out infinite alternate;
+    }
+
+    .frog-bonus::before {
+      content: "!";
+      font-weight: 500;
+    }
+
     .frog-flash {
       position: absolute;
       inset: 0;
@@ -622,86 +621,42 @@ button, a { -webkit-tap-highlight-color: transparent; }
       animation: frog-debris 1s cubic-bezier(.18,.75,.3,1) forwards;
     }
 
-    .frog-side {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .frog-sanity-label {
-      margin: 0;
-      color: var(--muted-foreground);
-    }
-
-    .frog-sanity-value {
-      margin: 3px 0 8px;
-      font-weight: 500;
-      letter-spacing: -.03em;
-    }
-
-    .frog-sanity-card {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .frog-sanity-card::after {
-      content: "🧪";
-      position: absolute;
-      right: 10px;
-      top: 8px;
-      opacity: .6;
-      transform: rotate(12deg);
-    }
-
-    .frog-sanity-copy {
-      margin: 9px 0 0;
-      color: var(--frog-muted);
-    }
-
-    .frog-log-box {
-      display: grid;
-      align-content: start;
-      gap: 9px;
-      padding: 14px;
-      border-radius: 18px;
-      background: color-mix(in srgb, var(--frog-ink) 6%, transparent);
-      min-height: 139px;
-    }
-
-    .frog-log-box h2 {
-      margin: 0;
-      font-weight: 500;
-    }
-
-    .frog-log {
-      display: grid;
-      gap: 7px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .frog-log li {
-      padding-bottom: 7px;
-      border-bottom: 1px solid var(--frog-line);
-      color: var(--frog-muted);
-    }
-
-    .frog-log li:last-child {
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
-
     .frog-start-wrap {
       display: grid;
       gap: 6px;
     }
 
-    .frog-start-note {
+    .frog-start-wrap .btn {
+      min-width: 116px;
+    }
+
+    .frog-control-deck {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .frog-sanity-strip {
+      display: grid;
+      grid-template-columns: auto auto minmax(90px, 1fr);
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .frog-sanity-strip strong {
+      font-weight: 500;
+    }
+
+    .frog-sanity-strip .progress {
       margin: 0;
-      color: var(--muted-foreground);
-      text-align: center;
+    }
+
+    .frog-icon-btn {
+      width: 42px;
+      min-width: 42px;
+      padding: 0;
     }
 
     .frog-actions {
@@ -977,34 +932,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
       50% { margin-left: 3px; filter: contrast(1.8) saturate(2.2) hue-rotate(18deg); }
     }
 
-    .frog-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: var(--muted-foreground);
+    @keyframes frog-bonus-pop {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-18deg); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
     }
 
-    .frog-bottom p {
-      margin: 0;
-    }
-
-    .frog-bottom-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .frog-credit {
-      opacity: .86;
-    }
-
-    .frog-credit a {
-      color: inherit;
-      text-decoration: underline;
-      text-underline-offset: 2px;
+    @keyframes frog-bonus-pulse {
+      from { margin-top: -4px; }
+      to { margin-top: 4px; }
     }
 
     @keyframes frog-bob {
@@ -1040,21 +975,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
     }
 
     @media (max-width: 650px) {
-      .frog-main {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
       .frog-stage {
-        min-height: 350px;
-      }
-
-      .frog-side {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: auto auto;
-      }
-
-      .frog-sanity-card {
-        grid-column: 1 / -1;
+        min-height: 370px;
       }
 
       .frog-actions {
@@ -1065,14 +987,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
-      .frog-sign {
-        right: 11px;
-        top: 28px;
-        width: 92px;
-      }
-
       .frog-speech {
         max-width: 55%;
+      }
+
+      .frog-control-deck {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .frog-start-wrap .btn {
+        width: 100%;
       }
 
       .frog-poke {
@@ -1091,16 +1015,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
         max-width: 62%;
       }
 
-      .frog-sign {
-        width: 78px;
-      }
-
-      .frog-side {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .frog-sanity-card {
-        grid-column: auto;
+      .frog-sanity-strip {
+        grid-template-columns: auto auto minmax(60px, 1fr);
       }
 
       .frog-action {
@@ -1123,38 +1039,32 @@ button, a { -webkit-tap-highlight-color: transparent; }
   <section class="frog-shell" aria-labelledby="frog-title">
     <header class="frog-header">
       <div class="frog-heading">
-        <p class="frog-kicker text-small">🧪 NAIWA LAB · 奶龙民间变异体观察 #404</p>
         <h1 class="frog-title" id="frog-title">奶蛙，给我笑！</h1>
-        <p class="frog-tagline text-small">这不是育儿模拟器，是一场有预谋的表情管理事故。</p>
       </div>
       <div class="frog-dashboard">
         <div class="frog-metric">
-          <span class="text-small">抽象值</span>
+          <span class="text-small">分数</span>
           <h2 class="frog-score tabular-nums" id="frog-score">00000</h2>
         </div>
         <span class="frog-multiplier text-small" id="frog-multiplier" data-hot="false">
           <span aria-hidden="true">🔥</span>
-          <span>缺德倍率 <b id="frog-mult">×1.0</b></span>
+          <span>倍率 <b id="frog-mult">×1.0</b></span>
         </span>
         <div class="frog-metric">
-          <span class="text-small">剩余</span>
+          <span class="text-small">时间</span>
           <strong class="tabular-nums" id="frog-time">40.0s</strong>
         </div>
+        <button class="btn btn-ghost frog-icon-btn" id="frog-sound" type="button" aria-label="关闭音效" aria-pressed="true">🔊</button>
       </div>
     </header>
 
     <div class="frog-main">
-      <section class="frog-stage" id="frog-stage" aria-label="奶蛙整活实验舞台">
+      <section class="frog-stage" id="frog-stage" aria-label="奶蛙整活舞台">
         <div class="frog-watermark" aria-hidden="true">NAIWA · 404</div>
-        <div class="frog-sign text-small" aria-label="实验室须知：禁止讲理，允许拍打">
-          <strong>实验须知</strong>
-          禁止讲理<br>
-          允许拍打
-        </div>
-        <div class="frog-speech" id="frog-speech" aria-live="polite">奶蛙正在装无辜。先点“开始整活”。</div>
+        <div class="frog-speech" id="frog-speech" aria-live="polite">来啊。</div>
         <div class="frog-label text-small">
           <span class="frog-label-dot" aria-hidden="true"></span>
-          <span id="frog-state-label">待机 · 假装乖巧</span>
+          <span id="frog-state-label">装乖</span>
         </div>
 
         <div class="frog-ghost left" aria-hidden="true"></div>
@@ -1167,10 +1077,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
           <span class="frog-sprite" id="frog-sprite" aria-hidden="true"></span>
         </button>
 
-        <div class="frog-frenzy-banner text-small" id="frog-frenzy-banner" hidden>⚠️ 理智欠费 · 奶蛙暴走 · 得分 ×2</div>
+        <div class="frog-frenzy-banner text-small" id="frog-frenzy-banner" hidden>⚠️ 暴走 ×2</div>
 
         <div class="frog-event" id="frog-event" role="dialog" aria-modal="false" aria-labelledby="frog-event-title" hidden>
-          <p class="frog-kicker text-small" id="frog-event-kicker">突发插播</p>
+          <p class="frog-kicker text-small" id="frog-event-kicker">事故</p>
           <h2 class="frog-event-title" id="frog-event-title">奶龙来电</h2>
           <p class="frog-event-copy" id="frog-event-copy"></p>
           <div class="frog-event-actions" id="frog-event-actions"></div>
@@ -1180,15 +1090,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
         </div>
 
         <div class="frog-result" id="frog-result" role="dialog" aria-modal="false" aria-labelledby="frog-result-title" hidden>
-          <p class="frog-kicker text-small">缺德实验最终报告</p>
+          <p class="frog-kicker text-small">结算</p>
           <h2 id="frog-result-title">互联网抽象遗产</h2>
           <p id="frog-result-copy">奶蛙已失去表情管理，但拒绝承认自己疯过。</p>
           <div class="frog-result-score text-small">
-            <span>抽象值</span>
+            <span>分数</span>
             <b class="tabular-nums" id="frog-result-score">0</b>
           </div>
           <div class="frog-result-chips text-small" id="frog-result-chips"></div>
-          <button class="btn btn-primary" id="frog-restart" type="button">再审一局</button>
+          <button class="btn btn-primary" id="frog-restart" type="button">再来</button>
         </div>
 
         <div class="frog-photo-viewer" id="frog-photo-viewer" role="dialog" aria-modal="false" aria-labelledby="frog-photo-viewer-title" hidden>
@@ -1200,71 +1110,54 @@ button, a { -webkit-tap-highlight-color: transparent; }
             </div>
             <h2 id="frog-photo-viewer-title">黑历史</h2>
             <p class="text-small" id="frog-photo-viewer-caption"></p>
-            <button class="btn" id="frog-photo-viewer-close" type="button">关掉，太丑了</button>
+            <button class="btn" id="frog-photo-viewer-close" type="button">关掉</button>
           </div>
         </div>
 
         <div class="frog-flash" id="frog-flash" aria-hidden="true"></div>
       </section>
 
-      <aside class="frog-side" aria-label="奶蛙状态与实验记录">
-        <div class="card frog-sanity-card">
-          <p class="frog-sanity-label text-small">奶蛙理智余额</p>
-          <h2 class="frog-sanity-value tabular-nums" id="frog-sanity">100</h2>
-          <div class="progress" id="frog-sanity-meter" role="progressbar" aria-label="奶蛙理智" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
-            <div class="progress-bar" id="frog-sanity-bar" style="width:100%"></div>
-          </div>
-          <p class="frog-sanity-copy text-small" id="frog-sanity-copy">尚未开始怀疑人生。</p>
-        </div>
-
-        <div class="frog-log-box">
-          <h2 class="text-small">实验记录</h2>
-          <ul class="frog-log text-small" id="frog-log">
-            <li>系统提示：此实验没有对照组，因为没人愿意来。</li>
-          </ul>
-        </div>
-
-        <div class="frog-start-wrap">
-          <button class="btn btn-primary btn-block" id="frog-start" type="button">开始整活</button>
-          <p class="frog-start-note text-small" id="frog-start-note">40 秒 · 没有奶蛙受到实质伤害</p>
-        </div>
-      </aside>
     </div>
 
-    <div class="frog-actions" aria-label="作案工具">
-      <button class="btn frog-action" type="button" data-prank="coffee" aria-label="1 号工具，冰美式灌顶，理智减 18" disabled>
+    <div class="card frog-control-deck">
+      <div class="frog-sanity-strip">
+        <span class="text-small">理智</span>
+        <strong class="tabular-nums" id="frog-sanity">100</strong>
+        <div class="progress" id="frog-sanity-meter" role="progressbar" aria-label="奶蛙理智" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+          <div class="progress-bar" id="frog-sanity-bar" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="frog-start-wrap">
+        <button class="btn btn-primary" id="frog-start" type="button">开搞</button>
+      </div>
+    </div>
+
+    <div class="frog-actions" aria-label="整活按钮">
+      <button class="btn frog-action" type="button" data-prank="coffee" aria-label="冰美式" disabled>
         <span aria-hidden="true">☕</span>
-        <span class="frog-action-text"><span>冰美式灌顶</span><small>理智 −18</small></span>
+        <span class="frog-action-text"><span>冰美式</span></span>
       </button>
-      <button class="btn frog-action" type="button" data-prank="sock" aria-label="2 号工具，臭袜熏蛙，理智减 22" disabled>
+      <button class="btn frog-action" type="button" data-prank="sock" aria-label="臭袜" disabled>
         <span aria-hidden="true">🧦</span>
-        <span class="frog-action-text"><span>臭袜熏蛙</span><small>理智 −22</small></span>
+        <span class="frog-action-text"><span>臭袜</span></span>
       </button>
-      <button class="btn frog-action" type="button" data-prank="nailong" aria-label="3 号工具，播放奶龙洗脑，理智减 16" disabled>
+      <button class="btn frog-action" type="button" data-prank="nailong" aria-label="放奶龙" disabled>
         <span aria-hidden="true">📺</span>
-        <span class="frog-action-text"><span>奶龙洗脑</span><small>理智 −16</small></span>
+        <span class="frog-action-text"><span>放奶龙</span></span>
       </button>
-      <button class="btn frog-action" type="button" data-prank="photo" aria-label="4 号工具，丑照留档，理智减 20" disabled>
+      <button class="btn frog-action" type="button" data-prank="photo" aria-label="拍丑照" disabled>
         <span aria-hidden="true">📸</span>
-        <span class="frog-action-text"><span>丑照留档</span><small>解锁图鉴</small></span>
+        <span class="frog-action-text"><span>拍丑照</span></span>
       </button>
     </div>
 
     <section class="frog-gallery-panel" aria-labelledby="frog-gallery-title">
       <div class="frog-gallery-head">
-        <h2 class="text-small" id="frog-gallery-title">奶蛙黑历史图鉴</h2>
-        <span class="frog-gallery-count text-small" id="frog-gallery-count" aria-live="polite">0/8 · 每张丑照让缺德倍率 +5%</span>
+        <h2 class="text-small" id="frog-gallery-title">黑历史</h2>
+        <span class="frog-gallery-count text-small" id="frog-gallery-count" aria-live="polite">0/8</span>
       </div>
       <div class="frog-gallery-grid" id="frog-gallery-grid"></div>
     </section>
-
-    <div class="frog-bottom text-small">
-      <p>Q 戳肚皮 · 1–4 作案工具 · 丑照会随拍摄顺序变异</p>
-      <div class="frog-bottom-actions">
-        <span class="frog-credit">动画素材：timerring · MIT</span>
-        <button class="btn btn-ghost" id="frog-sound" type="button" aria-pressed="true">🔊 音效开</button>
-      </div>
-    </div>
     <p class="sr-only" id="frog-announcer" aria-live="polite"></p>
   </section>
 </div>
@@ -1290,10 +1183,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     sanity: $("frog-sanity"),
     sanityMeter: $("frog-sanity-meter"),
     sanityBar: $("frog-sanity-bar"),
-    sanityCopy: $("frog-sanity-copy"),
-    log: $("frog-log"),
     start: $("frog-start"),
-    startNote: $("frog-start-note"),
     actions: [...root.querySelectorAll(".frog-action")],
     event: $("frog-event"),
     eventKicker: $("frog-event-kicker"),
@@ -1339,7 +1229,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "dough",
       title: "奶油发面脸",
-      caption: "奶蛙被发酵成了两倍宽，烤箱拒绝签收。",
+      caption: "发酵成功，烤箱拒收。",
       fx: "photofx-squash",
       prop: "🥛",
       frameRow: 0,
@@ -1349,7 +1239,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "pixel",
       title: "电子包浆",
-      caption: "这张图已经传了八百年，连像素都开始交社保。",
+      caption: "传了八百年，像素都老了。",
       fx: "photofx-pixel",
       prop: "🧦",
       frameRow: 4,
@@ -1359,7 +1249,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "client",
       title: "甲方想打人",
-      caption: "黑白高级感拉满，甲方还是说：能不能再圆一点？",
+      caption: "甲方：再圆一点。",
       fx: "photofx-noir",
       prop: "📺",
       frameRow: 3,
@@ -1369,7 +1259,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "acid",
       title: "奶龙同款滤镜",
-      caption: "绿色饱和度超标，奶蛙声称这是血缘觉醒。",
+      caption: "血缘觉醒。",
       fx: "photofx-acid",
       prop: "💚",
       frameRow: 6,
@@ -1379,7 +1269,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "door",
       title: "门缝受害者",
-      caption: "身份证照片拍摄失败：进门时被门夹成了平行四边形。",
+      caption: "身份证照片，派出所拒办。",
       fx: "photofx-door",
       prop: "🚪",
       frameRow: 8,
@@ -1389,7 +1279,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "shopping",
       title: "午夜电视购物",
-      caption: "奶蛙正在推销自己，字幕写着“最后 3 斤”。",
+      caption: "最后 3 斤。",
       fx: "photofx-tv",
       prop: "🛒",
       frameRow: 0,
@@ -1399,7 +1289,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "wanted",
       title: "全网通缉蛙",
-      caption: "悬赏金额：三杯冰美式。照片比本人更像本人。",
+      caption: "悬赏：三杯冰美式。",
       fx: "photofx-wanted",
       prop: "🚨",
       frameRow: 4,
@@ -1409,7 +1299,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     {
       id: "glitch",
       title: "赛博遗像",
-      caption: "系统检测到笑点溢出，建议立即断网并给奶蛙烧个路由器。",
+      caption: "笑点溢出。",
       fx: "photofx-glitch",
       prop: "💾",
       frameRow: 7,
@@ -1425,9 +1315,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
       sanity: 18,
       anim: "runRight",
       lines: [
-        "冰美式下肚，奶蛙瞳孔里同时打开了 16 个网页。",
-        "奶蛙开始用腹语背诵 800 位圆周率，还押韵。",
-        "奶蛙原地运行到风扇狂转，但它的风扇在哪里？"
+        "十六个网页同时打开。",
+        "开始背圆周率。",
+        "风扇狂转。"
       ]
     },
     sock: {
@@ -1436,9 +1326,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
       sanity: 22,
       anim: "sad",
       lines: [
-        "奶蛙瞳孔地震：这是什么跨时代的生化武器？",
-        "奶蛙捂着肚子后退三步，连尾巴都开始道歉。",
-        "臭袜攻击命中。奶蛙第一次理解了什么是“眼前一黄”。"
+        "生化武器。",
+        "眼前一黄。",
+        "奶蛙停止呼吸。"
       ]
     },
     nailong: {
@@ -1447,9 +1337,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
       sanity: 16,
       anim: "wave",
       lines: [
-        "奶龙刚挥手，奶蛙的笑容就像共享单车一样被人骑走了。",
-        "奶蛙指着屏幕：凭什么它比我圆？",
-        "视频播放完毕，奶蛙申请与奶龙断绝同门关系。"
+        "这谁？不认识。",
+        "凭什么它比我圆？",
+        "断绝关系。"
       ]
     },
     photo: {
@@ -1458,137 +1348,127 @@ button, a { -webkit-tap-highlight-color: transparent; }
       sanity: 20,
       anim: "laugh",
       lines: [
-        "咔嚓！奶蛙的丑照已写入祖谱第一页。",
-        "闪光灯太亮，奶蛙短暂看不见自己的尊严。",
-        "新头像审核失败：过度抽象，涉嫌恐怖谷。"
+        "祖谱第一页。",
+        "尊严曝光。",
+        "审丑通过。"
       ]
     }
   };
 
   const TAP_LINES = [
-    "手感不错。奶蛙记仇 +1。",
-    "奶蛙发出一声 Q 弹的“呱”，疑似肚皮自带音效。",
-    "奶蛙没有躲，它在等你解释自己的行为。",
-    "这一指，戳出了当代互联网的空虚。",
-    "奶蛙开始怀疑你是不是有正经工作。",
-    "肚皮：弹性库存充足，仇恨库存更充足。",
-    "奶蛙决定把你也写进它的毕业论文。",
-    "戳得很好，下次别戳了。奶蛙说的。"
+    "呱！",
+    "记仇 +1。",
+    "你完了。",
+    "再来。",
+    "弹！",
+    "？",
+    "抓不到我。",
+    "别停。"
   ];
 
   const EVENTS = [
     {
-      kicker: "突发插播 · 亲戚来电",
-      title: "奶龙突然打来视频电话",
-      copy: "奶蛙脸色从黄色变成了另一种黄色。电话那头，奶龙正在展示自己刚学会的新舞。",
+      kicker: "事故",
+      title: "奶龙来电",
+      copy: "接不接？",
       choices: [
         {
-          label: "接通并喊爸",
+          label: "接，喊爸",
           score: 240,
           sanity: -10,
           anim: "wave",
-          bubble: "奶龙沉默三秒挂断。奶蛙赢了，但赢得很难看。",
-          log: "家庭伦理剧成功拖垮双方通讯录。"
+          bubble: "对方挂断。"
         },
         {
-          label: "挂断并回丑照",
+          label: "发丑照",
           score: 340,
           sanity: -18,
           anim: "laugh",
-          bubble: "奶蛙把丑照发了过去。奶龙已保存为家人头像。",
-          log: "亲情根据像素点进一步破裂。"
+          bubble: "已保存。"
         }
       ]
     },
     {
-      kicker: "突发插播 · 直播事故",
-      title: "奶蛙开了直播，但只卖出三单",
-      copy: "商品写着“手工奶嗝，纯天然，不限量”。观众 3 人，其中两个是你的小号。",
+      kicker: "事故",
+      title: "直播三单",
+      copy: "两个是你小号。",
       choices: [
         {
-          label: "把臭袜挂上链接",
+          label: "卖臭袜",
           score: 390,
           sanity: -21,
           anim: "sad",
-          bubble: "臭袜一秒售罄。奶蛙开始怀疑互联网的品味。",
-          log: "异味商品完成惊人转化率。"
+          bubble: "秒空。"
         },
         {
-          label: "现场表演胸口碎奶瓶",
+          label: "碎奶瓶",
           score: 280,
           sanity: -12,
           anim: "runLeft",
-          bubble: "奶瓶没碎，奶蛙的偶像包袱碎了。",
-          log: "才艺展示成功吓跑最后一名观众。"
+          bubble: "包袱碎了。"
         }
       ]
     },
     {
-      kicker: "突发插播 · 生理危机",
-      title: "体重秤当众念出了奶蛙的体重",
-      copy: "电子秤显示：“请一个一个站。”奶蛙身边明明没有任何人。",
+      kicker: "事故",
+      title: "体重秤开口",
+      copy: "请一个一个站。",
       choices: [
         {
-          label: "拍照发家庭群",
+          label: "发家庭群",
           score: 360,
           sanity: -25,
           anim: "wave",
-          bubble: "奶蛙被你宣判社会性死亡。家庭群开始刷屏“哈哈哈”。",
-          log: "公开处刑完成，亲戚关系更加紧密。"
+          bubble: "亲戚笑了。"
         },
         {
-          label: "把秤调成 0.1kg",
+          label: "改 0.1kg",
           score: 180,
           sanity: -8,
           anim: "think",
-          bubble: "奶蛙感动了。电子秤报警了。",
-          log: "物理规律遭到临时篡改。"
+          bubble: "秤报警了。"
         }
       ]
     },
     {
-      kicker: "突发插播 · 神秘装置",
-      title: "“禁止按”的红色按钮亮了",
-      copy: "按钮旁边写着：禁止按。奶蛙已经把爪子放上去了，还用眼神鼓励你。",
+      kicker: "事故",
+      title: "别按红钮",
+      copy: "奶蛙已经伸爪。",
       choices: [
         {
           label: "按一下",
           score: 210,
           sanity: -10,
           anim: "wave",
-          bubble: "灯灭了。三秒后，灯又以十倍亮度亮了起来。",
-          log: "基本遵守了人类的禁止规范。"
+          bubble: "灯更亮了。"
         },
         {
-          label: "闭眼连按十下",
+          label: "连按十下",
           score: 470,
           sanity: -32,
           anim: "glitch",
-          bubble: "实验室响起了《好运来》，奶蛙则开始倒着走。",
-          log: "按钮已被列入国际危险品清单。"
+          bubble: "开始倒着走。"
         }
       ]
     },
     {
-      kicker: "突发插播 · 社交媒体",
-      title: "奶蛙把你设成了置顶好友",
-      copy: "它还给你的每条朋友圈都点了赞，包括三年前那条“再也不熬夜”。",
+      kicker: "事故",
+      title: "三年前的赞",
+      copy: "奶蛙翻到了你的黑历史。",
       choices: [
         {
-          label: "感动地回赞",
+          label: "回赞",
           score: 260,
           sanity: -9,
           anim: "wave",
-          bubble: "你们互相点赞了 47 次。平台判定为异常交易。",
-          log: "赛博友谊完成一次高风险握手。"
+          bubble: "互赞 47 次。"
         },
         {
-          label: "把它移出置顶",
+          label: "移除置顶",
           score: 320,
           sanity: -24,
           anim: "sad",
-          bubble: "奶蛙撤回了一个奶嗝，决定三天不理你。",
-          log: "家庭冷战已进入倒数计时。"
+          bubble: "冷战开始。"
         }
       ]
     }
@@ -1619,6 +1499,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
     photoForms: [],
     photoCaptures: 0,
     photoViewing: false,
+    bonusHits: 0,
+    nextBonusAt: 2.4,
     bestScore: 0
   };
 
@@ -1654,7 +1536,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
     try {
       window.localStorage.setItem("naifrog-blackmail-v1", JSON.stringify(state.photoForms));
     } catch {
-      // The game remains playable when local storage is unavailable.
     }
   }
 
@@ -1670,7 +1551,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
     try {
       window.localStorage.setItem("naifrog-best-score-v1", String(score));
     } catch {
-      // Local persistence is optional.
     }
   }
 
@@ -1698,7 +1578,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
       nextEventAt: 12,
       eventIndex: 0,
       photoCaptures: 0,
-      photoViewing: false
+      photoViewing: false,
+      bonusHits: 0,
+      nextBonusAt: 2.4
     });
     state.photoForms = loadPhotoAlbum();
   }
@@ -1712,13 +1594,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
       ],
       { duration: 180, easing: "ease-out" }
     );
-  }
-
-  function pushLog(text) {
-    const item = document.createElement("li");
-    item.textContent = text;
-    elements.log.prepend(item);
-    while (elements.log.children.length > 3) elements.log.lastElementChild.remove();
   }
 
   function setAnimation(name, holdMs = 0) {
@@ -1836,6 +1711,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
   function showPhotoViewer(form) {
     if (state.event) return;
+    removeBonusTarget();
     state.photoViewing = true;
     paintPhoto(
       elements.photoViewerImage,
@@ -1854,6 +1730,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
   function closePhotoViewer() {
     state.photoViewing = false;
+    state.nextBonusAt = 1.4;
     elements.photoViewer.hidden = true;
     render();
   }
@@ -1895,22 +1772,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
       state.photoForms.push(form.id);
       savePhotoAlbum();
       addScore(form.bonus);
-      pushLog(`📸 新丑照解锁「${form.title}」+${form.bonus}`);
     } else {
       addScore(55);
-      pushLog(`📸 「${form.title}」重返犯罪现场 +55`);
     }
     showPhotoMoment(form, isNew);
-    bubble(`${form.title}：${form.caption}`);
+    bubble(choose(["咔嚓。", "证据到手。", "别眨眼。"]));
 
     if (before < 4 && state.photoForms.length >= 4) {
       addScore(320);
-      pushLog("🏆 四形态达成：奶蛙开始害怕镜头 +320");
       showPopup("丑照达人 +320", "🏆");
     }
     if (before < 8 && state.photoForms.length >= 8) {
       addScore(900);
-      pushLog("💀 全形态达成：家族群已禁止转发 +900");
       showPopup("全形态丑照 +900", "💀");
       debris(14);
     }
@@ -1931,26 +1804,21 @@ button, a { -webkit-tap-highlight-color: transparent; }
     elements.frenzyBanner.hidden = !state.frenzy;
 
     if (state.frenzy) {
-      elements.sanityCopy.textContent = `已欠费 ${Math.ceil(state.frenzyLeft)} 秒，奶蛙濒临变异。`;
-      elements.stateLabel.textContent = "暴走 · 已失去表情管理";
+      elements.stateLabel.textContent = "暴走";
     } else if (!state.running) {
-      elements.sanityCopy.textContent = state.ended ? "实验结束，理智仍在挂失中。" : "尚未开始怀疑人生。";
-      elements.stateLabel.textContent = state.ended ? "收工 · 拒绝复盘" : "待机 · 假装乖巧";
+      elements.stateLabel.textContent = state.ended ? "废了" : "装乖";
     } else if (state.sanity > 70) {
-      elements.sanityCopy.textContent = "表面镇定，内心已经骂了八百遍。";
-      elements.stateLabel.textContent = "稳定 · 正在记仇";
+      elements.stateLabel.textContent = "记仇";
     } else if (state.sanity > 35) {
-      elements.sanityCopy.textContent = "开始怀疑你是奶龙派来的。";
-      elements.stateLabel.textContent = "紧绷 · 笑容逐渐消失";
+      elements.stateLabel.textContent = "破防";
     } else {
-      elements.sanityCopy.textContent = "笑容已经出现批量像素错误。";
-      elements.stateLabel.textContent = "危险 · 请勿继续讲理";
+      elements.stateLabel.textContent = "想咬人";
     }
 
     elements.actions.forEach((button) => {
       button.disabled = !state.running || state.ended || Boolean(state.event) || state.photoViewing;
     });
-    elements.galleryCount.textContent = `${state.photoForms.length}/8 · 每张丑照让缺德倍率 +5%`;
+    elements.galleryCount.textContent = `${state.photoForms.length}/8`;
     elements.galleryGrid.querySelectorAll(".frog-photo-thumb").forEach((button, index) => {
       const form = PHOTO_FORMS[index];
       const unlocked = state.photoForms.includes(form.id);
@@ -1959,7 +1827,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
       button.querySelector(".frog-photo-label").textContent = unlocked ? form.title : "未解锁";
       button.setAttribute("aria-label", unlocked ? `查看丑照：${form.title}` : `未解锁丑照 ${index + 1}`);
     });
-    elements.start.disabled = state.running;
+    elements.start.hidden = state.running || state.ended;
 
     if (state.event) {
       const ratio = clamp(state.eventTime / 5.5, 0, 1);
@@ -1978,13 +1846,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
     elements.event.hidden = true;
     elements.photoViewer.hidden = true;
     state.photoViewing = false;
-    elements.start.disabled = true;
-    elements.start.textContent = "实验中…";
-    elements.startNote.textContent = "建议立刻开始缺德，别让奶蛙缓过来";
-    elements.log.replaceChildren();
-    pushLog("实验启动：奶蛙开始假装自己不是实验品。");
-    bubble("奶蛙已就位。你的缺德许可证有效 40 秒。");
-    elements.announcer.textContent = "整活开始。点击奶蛙，或使用四个作案工具。";
+    elements.start.hidden = true;
+    removeBonusTarget();
+    bubble("开始。");
+    elements.announcer.textContent = "开始。";
     setAnimation("idle");
     render();
     playSound("start");
@@ -2017,15 +1882,60 @@ button, a { -webkit-tap-highlight-color: transparent; }
       return;
     }
 
+    state.nextBonusAt -= dt;
+    if (state.nextBonusAt <= 0) spawnBonusTarget();
+
     const elapsed = 40 - state.timeLeft;
     if (elapsed >= state.nextEventAt && !state.event) openEvent();
+    render();
+  }
+
+  function spawnBonusTarget() {
+    if (state.event || state.photoViewing || state.ended) return;
+    removeBonusTarget();
+    const target = document.createElement("button");
+    target.type = "button";
+    target.className = "frog-bonus cursor-interaction";
+    target.setAttribute("aria-label", "抓住破绽");
+    target.style.setProperty("--bonus-x", `${14 + Math.random() * 72}%`);
+    target.style.setProperty("--bonus-y", `${33 + Math.random() * 35}%`);
+    target.addEventListener("click", () => hitBonus(target));
+    elements.stage.appendChild(target);
+    state.nextBonusAt = 2.8 + Math.random() * 2.2;
+    window.setTimeout(() => {
+      if (target.isConnected) {
+        target.remove();
+        state.nextBonusAt = 1.2;
+      }
+    }, 2100);
+  }
+
+  function removeBonusTarget() {
+    elements.stage.querySelectorAll(".frog-bonus").forEach((target) => target.remove());
+  }
+
+  function hitBonus(target) {
+    if (!state.running || state.ended || state.event || state.photoViewing) return;
+    target.remove();
+    const now = performance.now();
+    bumpCombo(now);
+    state.bonusHits += 1;
+    const points = Math.round(180 * multiplierNow());
+    addScore(points);
+    state.sanity = clamp(state.sanity - 1.5);
+    bubble(choose(["抓到了。", "破绽 +1。", "奶蛙慌了。"]));
+    setAnimation("wave", 360);
+    showPopup(`+${points}`, "💥");
+    debris(5);
+    playSound("bonus");
+    if (state.sanity <= 0) triggerFrenzy();
     render();
   }
 
   function pokeFrog() {
     if (state.event || state.photoViewing) return;
     if (!state.running) {
-      bubble("先点“开始整活”。规矩可以缺德，流程不能乱。");
+      bubble("先开搞。");
       setAnimation("wave", 650);
       playSound("poke");
       return;
@@ -2065,7 +1975,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.sanity = clamp(state.sanity - prank.sanity);
     const line = choose(prank.lines);
     bubble(line);
-    pushLog(`${prank.icon} ${line} +${points}`);
     setAnimation(prank.anim, 900);
     showPopup(`+${points}`, prank.icon);
     debris(4 + Math.min(6, Math.floor(state.combo / 3)));
@@ -2086,8 +1995,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.frenzies += 1;
     state.sanity = 0;
     addScore(280);
-    bubble("理智归零！奶蛙展开了第三形态，并且拒绝解释。");
-    pushLog("🚨 暴走启动：奶蛙开始倒着笑、正着疯。");
+    bubble("理智清零。暴走！");
     showPopup("暴走！+280", "🚨");
     setAnimation("laugh");
     debris(12);
@@ -2100,14 +2008,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.frenzy = false;
     state.frenzyLeft = 0;
     state.sanity = 55;
-    bubble("奶蛙理智回充至 55。眼神已经回不去了，但生活还要继续。");
-    pushLog("🧯 暴走暂停：奶蛙声称自己刚才只是伸了个懒腰。");
+    bubble("回充。继续。");
     setAnimation("sad", 1000);
     playSound("recover");
     render();
   }
 
   function openEvent() {
+    removeBonusTarget();
     const event = EVENTS[state.eventIndex % EVENTS.length];
     state.eventIndex += 1;
     state.events += 1;
@@ -2128,12 +2036,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
     });
     elements.event.hidden = false;
     elements.eventBar.style.width = "100%";
-    bubble("插播事故：奶蛙暂停发疯，等你做出更缺德的选择。");
+    bubble("选一个。");
     setAnimation("think");
     playSound("event");
     render();
     window.setTimeout(() => elements.eventActions.querySelector("button")?.focus(), 40);
-    elements.announcer.textContent = `突发插播：${event.title}`;
+    elements.announcer.textContent = event.title;
   }
 
   function resolveEvent(choice) {
@@ -2144,7 +2052,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.eventTime = 0;
     elements.event.hidden = true;
     bubble(choice.bubble);
-    pushLog(`🎬 ${choice.log} +${choice.score}`);
     setAnimation(choice.anim, 1100);
     showPopup(`+${choice.score}`, "🎬");
     debris(8);
@@ -2161,8 +2068,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.score = Math.max(0, state.score - 70);
     state.combo = 0;
     state.sanity = clamp(state.sanity - 8);
-    bubble("奶蛙等你自己做决定，等到开始打哈欠。机会已过期，奶蛙决定单独发疯。");
-    pushLog("⌛ 犹豫太久：扣 70 抽象值，奶蛙已自行发病。");
+    bubble("犹豫太久。");
     setAnimation("sad", 900);
     playSound("oops");
     render();
@@ -2179,28 +2085,27 @@ button, a { -webkit-tap-highlight-color: transparent; }
     state.event = null;
     state.frenzy = false;
     state.photoViewing = false;
+    removeBonusTarget();
     elements.photoViewer.hidden = true;
-    elements.start.disabled = true;
-    elements.start.textContent = "实验结束";
-    elements.startNote.textContent = "报告已生成，维权请找奶龙";
+    elements.start.hidden = true;
     state.bestScore = Math.max(state.bestScore, Math.round(state.score));
     saveBestScore(state.bestScore);
 
     const score = Math.round(state.score);
     let title = "礼貌性社死";
-    let copy = "奶蛙没有疯，它只是暂时不想跟你说话。";
+    let copy = "奶蛙不想理你。";
     if (score >= 4600) {
       title = "奶蛙本蛙来投诉了";
-      copy = "你成功把奶蛙整成了互联网公共事件。奶龙表示概不负责。";
+      copy = "奶蛙报警了。";
     } else if (score >= 3300) {
       title = "互联网抽象遗产";
-      copy = "建议把本次实验刻成光盘，埋进未来考古现场。";
+      copy = "已封存进祖谱。";
     } else if (score >= 2100) {
       title = "奶蛙认证缺德带师";
-      copy = "奶蛙已失去表情管理，但还没有失去民事诉讼能力。";
+      copy = "奶蛙正在起诉。";
     } else if (score >= 900) {
       title = "手欠实习生";
-      copy = "缺德手法略显生疏，但奶蛙已经记住了你的脸。";
+      copy = "奶蛙记住了你。";
     }
 
     elements.resultTitle.textContent = title;
@@ -2212,6 +2117,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
       `戳肚皮 ${state.taps}`,
       `缺德操作 ${state.pranks}`,
       `丑照 ${state.photoForms.length}/8`,
+      `破绽 ${state.bonusHits}`,
       `暴走 ${state.frenzies}`,
       `事故 ${state.events}`,
       `本机最佳 ${state.bestScore}`
@@ -2221,10 +2127,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
       elements.resultChips.appendChild(chip);
     });
     elements.result.hidden = false;
-    bubble("实验结束。奶蛙正在后台卸载你的好友关系。");
+    bubble("结束。");
     setAnimation("review");
     playSound("end");
-    elements.announcer.textContent = `实验结束，称号：${title}，抽象值 ${score}。`;
+    elements.announcer.textContent = `结束。${title}，${score}分。`;
     render();
     persistGameState("complete");
     window.setTimeout(() => elements.restart.focus(), 50);
@@ -2245,7 +2151,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
         }
       }));
     } catch {
-      // Custom-event persistence is optional.
     }
   }
 
@@ -2307,6 +2212,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
     } else if (type === "photo") {
       tone(980, .035, "square", 0, .018);
       tone(140, .08, "square", .05, .014);
+    } else if (type === "bonus") {
+      tone(880, .045, "triangle");
+      tone(1175, .06, "triangle", .045);
     } else if (type === "event") {
       [440, 554, 659].forEach((frequency, index) => tone(frequency, .09, "triangle", index * .07));
     } else if (type === "eventwin") {
@@ -2333,15 +2241,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
     elements.result.hidden = true;
     elements.event.hidden = true;
     elements.photoViewer.hidden = true;
-    elements.start.disabled = false;
-    elements.start.textContent = "开始整活";
-    elements.startNote.textContent = "40 秒 · 没有奶蛙受到实质伤害";
-    elements.log.replaceChildren();
-    pushLog("系统提示：此实验没有对照组，因为没人愿意来。");
-    bubble("奶蛙正在装无辜。先点“开始整活”。");
+    elements.start.hidden = false;
+    elements.start.textContent = "开搞";
+    bubble("来啊。");
     elements.announcer.textContent = "";
+    updateSoundButton();
     setAnimation("idle");
     render();
+  }
+
+  function updateSoundButton() {
+    elements.sound.setAttribute("aria-pressed", String(soundEnabled));
+    elements.sound.setAttribute("aria-label", soundEnabled ? "关闭音效" : "打开音效");
+    elements.sound.textContent = soundEnabled ? "🔊" : "🔇";
   }
 
   elements.start.addEventListener("click", startGame);
@@ -2353,8 +2265,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   elements.photoViewerClose.addEventListener("click", closePhotoViewer);
   elements.sound.addEventListener("click", () => {
     soundEnabled = !soundEnabled;
-    elements.sound.setAttribute("aria-pressed", String(soundEnabled));
-    elements.sound.textContent = soundEnabled ? "🔊 音效开" : "🔇 音效关";
+    updateSoundButton();
     if (soundEnabled) playSound("nailong");
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "milk-frog-make-me-laugh",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A chaotic 40-second Milk Frog prank game with eight cursed photo forms.",
   "type": "module",
   "scripts": {
